@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track_search.dart';
-import 'package:mangayomi/modules/manga/detail/widgets/readmore.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/cached_network.dart';
@@ -24,16 +22,15 @@ class TrackerItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = l10nLocalizations(context)!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 0,
       backgroundColor: Colors.transparent,
-      child: _cardContent(context, l10n),
+      child: _cardContent(context),
     );
   }
 
-  Widget _cardContent(BuildContext context, AppLocalizations l10n) {
+  Widget _cardContent(BuildContext context) {
     return Stack(
       children: [
         Consumer(
@@ -92,58 +89,54 @@ class TrackerItemCard extends StatelessWidget {
                   width: context.width(0.8),
                   height: context.height(1),
                   child: SingleChildScrollView(
-                    child: context.isTablet
-                        ? _buildContentDesktop(context, l10n)
-                        : _buildContentMobile(context, l10n),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContentMobile(BuildContext context, AppLocalizations l10n) {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            SizedBox(
-              width: context.width(0.8),
-              child: Row(
-                children: [
-                  _coverCard(),
-                  Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      spacing: 6,
-                      children: _infoRow(context, l10n),
+                      children: [
+                        Stack(
+                          children: [
+                            SizedBox(
+                              width: context.width(0.8),
+                              child: Row(
+                                children: [
+                                  _coverCard(),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SelectableText(
+                                          track.summary ?? "",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(20),
+                          child: SizedBox(
+                            width: context.width(0.6),
+                            child: context.isTablet
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: _infoRow(context),
+                                  )
+                                : Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    spacing: 5,
+                                    children: _infoRow(context),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.all(20),
-          child: SizedBox(
-            width: context.width(0.6),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 6,
-              children: [
-                ReadMoreWidget(
-                  text: track.summary ?? "",
-                  initExpanded: false,
-                  onChanged: (value) {},
-                ),
-                TextButton.icon(
-                  onPressed: () => _pushMigrationScreen(context),
-                  label: Text(l10n.track_library_add),
-                  icon: Icon(Icons.add),
                 ),
               ],
             ),
@@ -153,50 +146,8 @@ class TrackerItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildContentDesktop(BuildContext context, AppLocalizations l10n) {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            SizedBox(
-              width: context.width(0.8),
-              child: Row(
-                children: [
-                  _coverCard(),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [SelectableText(track.summary ?? "")],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.all(20),
-          child: SizedBox(
-            width: context.width(0.6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                TextButton.icon(
-                  onPressed: () => _pushMigrationScreen(context),
-                  label: Text(l10n.track_library_add),
-                  icon: Icon(Icons.add),
-                ),
-                ..._infoRow(context, l10n),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _infoRow(BuildContext context, AppLocalizations l10n) {
+  List<Widget> _infoRow(BuildContext context) {
+    final l10n = l10nLocalizations(context)!;
     return [
       Text.rich(
         TextSpan(
@@ -227,6 +178,11 @@ class TrackerItemCard extends StatelessWidget {
         ),
         label: Text(l10n.open_in_browser),
         icon: Icon(Icons.public),
+      ),
+      TextButton.icon(
+        onPressed: () => _pushMigrationScreen(context),
+        label: Text(l10n.track_library_add),
+        icon: Icon(Icons.add),
       ),
     ];
   }
@@ -259,13 +215,13 @@ class TrackerItemCard extends StatelessWidget {
           itemType: itemType,
           source: null,
           author: "",
-          artist: "",
+          artist: null,
           genre: [],
           imageUrl: null,
           lang: null,
           link: null,
           status: Status.unknown,
-          description: "",
+          description: null,
         ),
         track,
       ),

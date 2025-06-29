@@ -1552,7 +1552,4 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get track_library_switch => 'Switch to another tracker';
-
-  @override
-  String get go_back => 'Go back';
 }

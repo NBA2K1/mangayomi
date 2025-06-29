@@ -26,8 +26,6 @@ import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 
-final libLocationRegex = RegExp(r"^/(Manga|Anime|Novel)Library$");
-
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key, required this.child});
 
@@ -153,7 +151,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   int currentIndex = 0;
-  bool isLibSwitch = false;
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -168,51 +165,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           data: (_) => Consumer(
             builder: (context, ref, child) {
               final isReadingScreen = _isReadingScreen(location);
-              bool uniqueSwitch = false;
-              final dest = !context.isTablet && isLibSwitch
-                  ? [
-                      "_disableLibSwitch",
-                      ...navigationOrder.where(
-                        (nav) => libLocationRegex.hasMatch(nav),
-                      ),
-                    ].where((nav) => !hideItems.contains(nav)).toList()
-                  : navigationOrder
-                        .where((nav) => !hideItems.contains(nav))
-                        .map((nav) {
-                          if (!context.isTablet &&
-                              !isLibSwitch &&
-                              [
-                                "/MangaLibrary",
-                                "/AnimeLibrary",
-                                "/NovelLibrary",
-                              ].contains(nav)) {
-                            if (uniqueSwitch) return null;
-                            uniqueSwitch = true;
-                            return "_enableLibSwitch";
-                          }
-                          return nav;
-                        })
-                        .nonNulls
-                        .toList();
+              final dest = navigationOrder
+                  .where((nav) => !hideItems.contains(nav))
+                  .toList();
 
-              if (isLibSwitch &&
-                  (currentIndex >= dest.length ||
-                      !libLocationRegex.hasMatch(location ?? ""))) {
-                currentIndex = 0;
-              } else {
-                String? libLocation;
-                if (!context.isTablet && !isLibSwitch) {
-                  libLocation = location?.replaceAll(
-                    libLocationRegex,
-                    "_enableLibSwitch",
-                  );
-                }
-                int currentIdx = dest.indexOf(
-                  libLocation ?? location ?? _defaultLocation,
-                );
-                if (currentIdx != -1) {
-                  currentIndex = currentIdx;
-                }
+              int currentIdx = dest.indexOf(location ?? _defaultLocation);
+              if (currentIdx != -1) {
+                currentIndex = currentIdx;
               }
 
               final incognitoMode = ref.watch(incognitoModeStateProvider);
@@ -248,19 +207,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                               ref: ref,
                               buildNavigationWidgetsMobile:
                                   _buildNavigationWidgetsMobile,
-                              onDestinationSelected: (destination) {
-                                if (destination == "_enableLibSwitch") {
-                                  setState(() {
-                                    isLibSwitch = true;
-                                  });
-                                } else if (destination == "_disableLibSwitch") {
-                                  setState(() {
-                                    isLibSwitch = false;
-                                  });
-                                } else {
-                                  route.go(destination);
-                                }
-                              },
                             ),
                     ),
                   ),
@@ -415,20 +361,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       const SizedBox.shrink(),
     );
 
-    if (dest.contains("_disableLibSwitch")) {
-      destinations[dest.indexOf("_disableLibSwitch")] = NavigationDestination(
-        selectedIcon: const Icon(Icons.arrow_back),
-        icon: const Icon(Icons.arrow_back),
-        label: l10n.go_back,
-      );
-    }
-    if (dest.contains("_enableLibSwitch")) {
-      destinations[dest.indexOf("_enableLibSwitch")] = NavigationDestination(
-        selectedIcon: const Icon(Icons.collections_bookmark),
-        icon: const Icon(Icons.collections_bookmark_outlined),
-        label: l10n.library,
-      );
-    }
     if (dest.contains("/MangaLibrary")) {
       destinations[dest.indexOf("/MangaLibrary")] = NavigationDestination(
         selectedIcon: const Icon(Icons.collections_bookmark),
@@ -632,7 +564,6 @@ class _MobileBottomNavigation extends StatelessWidget {
     required this.route,
     required this.ref,
     required this.buildNavigationWidgetsMobile,
-    required this.onDestinationSelected,
   });
 
   final bool isLongPressed;
@@ -643,7 +574,6 @@ class _MobileBottomNavigation extends StatelessWidget {
   final WidgetRef ref;
   final List<Widget> Function(WidgetRef, List<String>, BuildContext)
   buildNavigationWidgetsMobile;
-  final Function(String) onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -665,7 +595,7 @@ class _MobileBottomNavigation extends StatelessWidget {
           selectedIndex: currentIndex,
           destinations: buildNavigationWidgetsMobile(ref, dest, context),
           onDestinationSelected: (newIndex) {
-            onDestinationSelected(dest[newIndex]);
+            route.go(dest[newIndex]);
           },
         ),
       ),

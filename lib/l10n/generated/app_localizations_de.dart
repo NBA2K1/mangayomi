@@ -1508,42 +1508,37 @@ class AppLocalizationsDe extends AppLocalizations {
       'Du hast gerade versucht, ein ungültiges Repository hinzuzufügen. Bitte schau mal beim Discord Server vorbei!';
 
   @override
-  String get end_of_chapter => 'Ende des Kapitels';
+  String get end_of_chapter => 'End of chapter';
 
   @override
-  String get chapter_completed => 'Kapitel abgeschlossen';
+  String get chapter_completed => 'Chapter completed';
 
   @override
   String get continue_to_next_chapter =>
-      'Scrolle weiter, um an das nächste Kapitel zu gelangen';
+      'Continue scrolling to read the next chapter';
 
   @override
-  String get no_next_chapter => 'Keine weiteren Kapiteln';
+  String get no_next_chapter => 'No next chapter';
 
   @override
-  String get you_have_finished_reading => 'Du hast es fertig gelesen';
+  String get you_have_finished_reading => 'You have finished reading';
 
   @override
-  String get return_to_the_list_of_chapters =>
-      'Gehe zur Auflistung der Kapiteln';
+  String get return_to_the_list_of_chapters => 'Return to the list of chapters';
 
   @override
   String get hwdec => 'Hardware Decoder';
 
   @override
-  String get track_library_add => 'Zur lokalen Bibliothek hinzufügen';
+  String get track_library_add => 'Add to local library';
 
   @override
-  String get track_library_add_confirm =>
-      'Eintrag zur lokalen Bibliothek hinzufügen';
+  String get track_library_add_confirm => 'Add tracked item to local library';
 
   @override
   String get track_library_not_logged =>
-      'Du musst dich zuerst beim entsprechenden Tracker anmelden, bevor du diese Funktion nutzen kannst!';
+      'Login to the corresponding tracker to use this feature!';
 
   @override
-  String get track_library_switch => 'Zu einen anderen Tracker wechseln';
-
-  @override
-  String get go_back => 'Zurück';
+  String get track_library_switch => 'Switch to another tracker';
 }

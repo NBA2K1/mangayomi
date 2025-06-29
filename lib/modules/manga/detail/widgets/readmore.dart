@@ -8,11 +8,9 @@ class ReadMoreWidget extends StatefulWidget {
     super.key,
     required this.text,
     required this.onChanged,
-    this.initExpanded = true,
   });
   final Function(bool) onChanged;
   final String text;
-  final bool initExpanded;
 
   @override
   ReadMoreWidgetState createState() => ReadMoreWidgetState();
@@ -20,7 +18,7 @@ class ReadMoreWidget extends StatefulWidget {
 
 class ReadMoreWidgetState extends State<ReadMoreWidget>
     with TickerProviderStateMixin {
-  late bool expanded = widget.initExpanded;
+  late bool expanded = true;
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
