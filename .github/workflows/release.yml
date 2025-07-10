@@ -13,7 +13,40 @@ env:
   ZSIGN_VERSION: '0.7'
 
 jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update pubspec.yaml version from tag
+        run: |
+          git checkout main
+          git pull origin
+          VERSION_TAG="${GITHUB_REF_NAME#v}"
+          CURRENT_BUILD=$(grep "^version:" pubspec.yaml | sed -E 's/.*\+([0-9]+)/\1/')
+          if [ -z "$CURRENT_BUILD" ]; then
+            CURRENT_BUILD=0
+          fi
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          NEW_VERSION="${VERSION_TAG}+${NEW_BUILD}"
+          echo "Updating pubspec.yaml version to $NEW_VERSION"
+          sed -i "s/^version: .*/version: $NEW_VERSION/" pubspec.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "Update version to $NEW_VERSION from tag $GITHUB_REF_NAME" || echo "No changes to commit"
+          git push origin main
+          # Move the tag to point to latest main commit
+          git tag -f "$GITHUB_REF_NAME"
+          git push origin -f "$GITHUB_REF_NAME"
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
   build-and-release-android-apks:
+    needs: update-version
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -84,6 +117,7 @@ jobs:
           allowUpdates: true
 
   build-and-release-ios-ipa:
+    needs: update-version
     permissions:
       contents: write
     runs-on: macos-latest
@@ -145,6 +179,7 @@ jobs:
           allowUpdates: true
 
   build-and-release-macos-dmg:
+    needs: update-version
     permissions:
       contents: write
     runs-on: macos-latest
@@ -188,6 +223,7 @@ jobs:
           allowUpdates: true
 
   build-and-release-windows-exe_zip:
+    needs: update-version
     permissions:
       contents: write
     runs-on: windows-latest
@@ -248,6 +284,7 @@ jobs:
           allowUpdates: true
 
   build-and-release-linux-zip_AppImage_RPM:
+    needs: update-version
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -373,6 +410,7 @@ jobs:
           allowUpdates: true
 
   build-and-release-linux-deb:
+    needs: update-version
     permissions:
       contents: write
     runs-on: ubuntu-latest
