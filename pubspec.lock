@@ -1516,8 +1516,8 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: f4d9107956aabae303a2b990119bebc9a2671e62
-      url: "https://github.com/kodjodevf/re-editor"
+      resolved-ref: "3c5b0772639372fa71d04c7c1f55259db3b3592d"
+      url: "https://github.com/NBA2K1/re-editor"
     source: git
     version: "0.7.0"
   re_highlight:
