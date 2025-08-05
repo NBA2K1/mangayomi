@@ -156,5 +156,4 @@ inno_bundle:
     - french
     - german
   admin: false
-  version: 0.6.3
 

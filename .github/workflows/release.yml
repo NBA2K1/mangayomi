@@ -449,7 +449,3 @@ jobs:
         with:
           artifacts: dist/Mangayomi-*.deb
           allowUpdates: true
-
-  ios-source-build:
-    needs: build-and-release-ios-ipa
-    uses: ./.github/workflows/update_sideloading_source.yml
