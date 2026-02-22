@@ -15,10 +15,10 @@ Future<void> updateLibrary({
   required List<Manga> mangaList,
   required ItemType itemType,
 }) async {
-  AppLogger.log("Starting ${itemType.name} library update...");
+  final itemtype = itemType.name[0].toUpperCase() + itemType.name.substring(1);
+  AppLogger.log("Starting $itemtype library update...");
   if (mangaList.isEmpty) {
-    final cap = itemType.name[0].toUpperCase() + itemType.name.substring(1);
-    AppLogger.log("$cap library is empty. Nothing to update.");
+    AppLogger.log("$itemtype library is empty. Nothing to update.");
     return;
   }
   bool isDark = ref.read(themeModeStateProvider);
@@ -42,13 +42,10 @@ Future<void> updateLibrary({
         ).future,
       );
     } catch (e) {
-      AppLogger.log(
-        "Failed to update ${itemType.name}:",
-        logLevel: LogLevel.error,
-      );
+      AppLogger.log("Failed to update $itemtype:", logLevel: LogLevel.error);
       AppLogger.log(e.toString(), logLevel: LogLevel.error);
       failed++;
-      failedMangas.add(manga.name ?? "Unknown ${itemType.name}");
+      failedMangas.add(manga.name ?? "Unknown $itemtype");
     }
     if (context.mounted) {
       botToast(
@@ -67,7 +64,7 @@ Future<void> updateLibrary({
   BotToast.cleanAll();
   if (context.mounted && failedMangas.isNotEmpty) {
     final failedListText = failedMangas.map((m) => "• $m").join('\n');
-    final plural = failed == 1 ? itemType : "${itemType}s";
+    final plural = failed == 1 ? itemtype : "${itemtype}s";
     botToast(
       "Failed to update $failed $plural:\n$failedListText",
       fontSize: 13,
