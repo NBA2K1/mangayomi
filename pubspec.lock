@@ -301,10 +301,10 @@ packages:
     dependency: "direct main"
     description:
       name: d4rt
-      sha256: "5cdd18eff8a6cd62186da8942d1da70d0f82c09995e5d7837cf94dda747be463"
+      sha256: "4c178f741141592d60e4037c3205f9c081a3b32edc1061029a43667dff409a36"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.2"
   dart_style:
     dependency: transitive
     description:
