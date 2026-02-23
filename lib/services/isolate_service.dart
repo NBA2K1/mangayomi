@@ -168,7 +168,7 @@ class GetIsolateService {
     late final StreamSubscription sub;
 
     // Timeout safeguard
-    final timer = Timer(const Duration(seconds: 10), () {
+    final timer = Timer(const Duration(seconds: 40), () {
       if (!completer.isCompleted) {
         sub.cancel();
         responsePort.close();
