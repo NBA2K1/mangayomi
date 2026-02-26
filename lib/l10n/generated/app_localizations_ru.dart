@@ -1104,7 +1104,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Предпочитаемые языки, коррекция высоты тона, аудиоканалы';
 
   @override
-  String get player => 'Игрок';
+  String get player => 'Плеер';
 
   @override
   String get markEpisodeAsSeenSetting =>
