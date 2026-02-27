@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'package:epubx/epubx.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +19,7 @@ import 'package:mangayomi/modules/novel/widgets/novel_reader_settings_sheet.dart
 import 'package:mangayomi/modules/widgets/custom_draggable_tabbar.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/get_html_content.dart';
+import 'package:mangayomi/src/rust/api/epub.dart';
 import 'package:mangayomi/utils/extensions/dom_extensions.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
@@ -48,7 +48,7 @@ class NovelWebView extends ConsumerStatefulWidget {
   const NovelWebView({super.key, required this.chapter, required this.result});
 
   final Chapter chapter;
-  final AsyncValue<(String, EpubBook?)> result;
+  final AsyncValue<(String, EpubNovel?)> result;
 
   @override
   ConsumerState createState() {
@@ -103,7 +103,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   }
 
   late Chapter chapter = widget.chapter;
-  EpubBook? epubBook;
+  EpubNovel? epubBook;
 
   final StreamController<double> _rebuildDetail =
       StreamController<double>.broadcast();
@@ -268,11 +268,27 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                 novelReaderTextColorStateProvider,
                               );
 
-                              Color parseColor(String hex) {
-                                final hexColor = hex.replaceAll('#', '');
-                                return Color(
-                                  int.parse('FF$hexColor', radix: 16),
-                                );
+                              Color parseColor(String hex, {Color? fallback}) {
+                                try {
+                                  String hexColor = hex.trim().replaceAll(
+                                    '#',
+                                    '',
+                                  );
+                                  // Ensure we have a valid 6-character hex color
+                                  if (hexColor.length == 6) {
+                                    return Color(
+                                      int.parse('FF$hexColor', radix: 16),
+                                    );
+                                  } else if (hexColor.length == 8) {
+                                    // Already has alpha channel
+                                    return Color(
+                                      int.parse(hexColor, radix: 16),
+                                    );
+                                  }
+                                } catch (_) {
+                                  // If parsing fails, use fallback
+                                }
+                                return fallback ?? Colors.grey;
                               }
 
                               TextAlign getTextAlign() {
@@ -289,7 +305,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                               }
 
                               Future.delayed(
-                                const Duration(milliseconds: 10),
+                                const Duration(milliseconds: 100),
                                 () {
                                   if (!scrolled &&
                                       _scrollController.hasClients) {
@@ -339,9 +355,13 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                   ),
                                                   color: parseColor(
                                                     customTextColor,
+                                                    fallback: Colors.white,
                                                   ),
                                                   backgroundColor: parseColor(
                                                     customBackgroundColor,
+                                                    fallback: const Color(
+                                                      0xFF292832,
+                                                    ),
                                                   ),
                                                   margin: Margins.zero,
                                                   padding: HtmlPaddings.all(
@@ -384,6 +404,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                 "h1, h2, h3, h4, h5, h6": Style(
                                                   color: parseColor(
                                                     customTextColor,
+                                                    fallback: Colors.white,
                                                   ),
                                                   lineHeight: LineHeight(
                                                     lineHeight,
@@ -402,10 +423,60 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                                   ),
                                                   height: Height.auto(),
                                                 ),
+                                                "table": Style(
+                                                  border: Border.all(
+                                                    color: Colors.grey,
+                                                    width: 1,
+                                                  ),
+                                                  margin: Margins.symmetric(
+                                                    vertical: 10,
+                                                  ),
+                                                ),
+                                                "td, th": Style(
+                                                  border: Border.all(
+                                                    color: Colors.grey,
+                                                    width: 0.5,
+                                                  ),
+                                                  padding: HtmlPaddings.all(8),
+                                                ),
+                                                "th": Style(
+                                                  fontWeight: FontWeight.bold,
+                                                  backgroundColor: Colors.grey
+                                                      .withValues(alpha: 0.2),
+                                                ),
+                                                "blockquote": Style(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color: Colors.grey,
+                                                      width: 4,
+                                                    ),
+                                                  ),
+                                                  padding: HtmlPaddings.only(
+                                                    left: 15,
+                                                  ),
+                                                  margin: Margins.symmetric(
+                                                    vertical: 10,
+                                                  ),
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                                "pre, code": Style(
+                                                  backgroundColor: Colors.grey
+                                                      .withValues(alpha: 0.2),
+                                                  padding: HtmlPaddings.all(8),
+                                                  fontFamily: 'monospace',
+                                                ),
+                                                "hr": Style(
+                                                  margin: Margins.symmetric(
+                                                    vertical: 20,
+                                                  ),
+                                                ),
                                               },
                                               extensions: [
                                                 TagExtension(
-                                                  tagsToExtend: {"img"},
+                                                  tagsToExtend: {
+                                                    "img",
+                                                    "source",
+                                                  },
                                                   builder: (extensionContext) {
                                                     final element =
                                                         extensionContext.node
@@ -1125,22 +1196,47 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   }
 
   Widget? _buildCustomWidgets(dom.Element element) {
-    if (element.localName == "img" &&
-        element.getSrc != null &&
-        epubBook != null) {
-      final fileName = element.getSrc!.split("/").last;
-      final image = epubBook!.Content!.Images!.entries
-          .firstWhereOrNull((img) => img.key.endsWith(fileName))
-          ?.value
-          .Content;
-      return image != null
-          ? widgets.Image(
-              errorBuilder: (context, error, stackTrace) => Text("❌"),
-              fit: BoxFit.scaleDown,
-              image: MemoryImage(image as Uint8List) as ImageProvider,
-            )
-          : null;
+    if (epubBook == null) return null;
+
+    if (element.localName == "img" && element.getSrc != null) {
+      final src = element.getSrc!;
+      final fileName = src.split("/").last;
+      final image = epubBook!.images
+          .firstWhereOrNull(
+            (img) =>
+                img.name.endsWith(fileName) ||
+                img.name.contains(fileName.replaceAll('%20', ' ')),
+          )
+          ?.content;
+
+      if (image != null) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: widgets.Image(
+            errorBuilder: (context, error, stackTrace) => Container(
+              padding: const EdgeInsets.all(8),
+              color: Colors.red.withValues(alpha: 0.1),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.broken_image, color: Colors.red),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Image not loaded: $fileName',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            fit: BoxFit.contain,
+            image: MemoryImage(image) as ImageProvider,
+          ),
+        );
+      }
     }
+
     return null;
   }
 }

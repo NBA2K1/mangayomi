@@ -178,7 +178,9 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
                               await _updateSource(source);
                             }
                           } finally {
-                            setState(() => isUpdating = false);
+                            if (mounted) {
+                              setState(() => isUpdating = false);
+                            }
                           }
                         },
                   child: isUpdating

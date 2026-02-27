@@ -10,12 +10,12 @@ part of 'backup.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(doBackUp)
-const doBackUpProvider = DoBackUpFamily._();
+final doBackUpProvider = DoBackUpFamily._();
 
 final class DoBackUpProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
-  const DoBackUpProvider._({
+  DoBackUpProvider._({
     required DoBackUpFamily super.from,
     required ({List<int> list, String path, BuildContext? context})
     super.argument,
@@ -65,7 +65,7 @@ final class DoBackUpProvider
   }
 }
 
-String _$doBackUpHash() => r'e0d28adf6b592e34f26fd6b566151f3691f1946a';
+String _$doBackUpHash() => r'231b70e9de3a2ed8d01c92569ce786c4de38ddc3';
 
 final class DoBackUpFamily extends $Family
     with
@@ -73,7 +73,7 @@ final class DoBackUpFamily extends $Family
           FutureOr<void>,
           ({List<int> list, String path, BuildContext? context})
         > {
-  const DoBackUpFamily._()
+  DoBackUpFamily._()
     : super(
         retry: null,
         name: r'doBackUpProvider',

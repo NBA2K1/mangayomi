@@ -22,11 +22,12 @@ class MihonExtensionService implements ExtensionService {
   late String androidProxyServer;
   @override
   late Source source;
-  late InterceptedClient client;
+  late final InterceptedClient client = MClient.init();
 
-  MihonExtensionService(this.source, this.androidProxyServer) {
-    client = MClient.init();
-  }
+  MihonExtensionService(this.source, this.androidProxyServer);
+
+  @override
+  void dispose() {}
 
   @override
   Map<String, String> getHeaders() {
@@ -357,7 +358,7 @@ class MihonExtensionService implements ExtensionService {
     final userAgent = isar.settings.getSync(227)!.userAgent;
     return {
       ...MClient.getCookiesPref(source.baseUrl!),
-      if (userAgent != null) 'user-agent': userAgent,
+      'user-agent': ?userAgent,
     };
   }
 }

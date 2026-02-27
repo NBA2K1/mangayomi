@@ -10,19 +10,19 @@ part of 'get_html_content.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(getHtmlContent)
-const getHtmlContentProvider = GetHtmlContentFamily._();
+final getHtmlContentProvider = GetHtmlContentFamily._();
 
 final class GetHtmlContentProvider
     extends
         $FunctionalProvider<
-          AsyncValue<(String, EpubBook?)>,
-          (String, EpubBook?),
-          FutureOr<(String, EpubBook?)>
+          AsyncValue<(String, EpubNovel?)>,
+          (String, EpubNovel?),
+          FutureOr<(String, EpubNovel?)>
         >
     with
-        $FutureModifier<(String, EpubBook?)>,
-        $FutureProvider<(String, EpubBook?)> {
-  const GetHtmlContentProvider._({
+        $FutureModifier<(String, EpubNovel?)>,
+        $FutureProvider<(String, EpubNovel?)> {
+  GetHtmlContentProvider._({
     required GetHtmlContentFamily super.from,
     required Chapter super.argument,
   }) : super(
@@ -45,12 +45,12 @@ final class GetHtmlContentProvider
 
   @$internal
   @override
-  $FutureProviderElement<(String, EpubBook?)> $createElement(
+  $FutureProviderElement<(String, EpubNovel?)> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<(String, EpubBook?)> create(Ref ref) {
+  FutureOr<(String, EpubNovel?)> create(Ref ref) {
     final argument = this.argument as Chapter;
     return getHtmlContent(ref, chapter: argument);
   }
@@ -66,11 +66,11 @@ final class GetHtmlContentProvider
   }
 }
 
-String _$getHtmlContentHash() => r'3d0f33e47c2136715ed72ee14f38934eca3f0df1';
+String _$getHtmlContentHash() => r'ef15133ac4066d556a03b42addf01be916e529bc';
 
 final class GetHtmlContentFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<(String, EpubBook?)>, Chapter> {
-  const GetHtmlContentFamily._()
+    with $FunctionalFamilyOverride<FutureOr<(String, EpubNovel?)>, Chapter> {
+  GetHtmlContentFamily._()
     : super(
         retry: null,
         name: r'getHtmlContentProvider',

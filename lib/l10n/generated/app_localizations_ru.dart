@@ -1104,7 +1104,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Предпочитаемые языки, коррекция высоты тона, аудиоканалы';
 
   @override
-  String get player => 'Игрок';
+  String get player => 'Плеер';
 
   @override
   String get markEpisodeAsSeenSetting =>
@@ -1810,4 +1810,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get default_user_agent => 'Defaul user agent';
+
+  @override
+  String get forceLandscapeMode => 'Force landscape mode';
+
+  @override
+  String get forceLandscapeModeSubtitle =>
+      'Force the player to use landscape orientation.';
+
+  @override
+  String get dns_over_https => 'DNS-over-HTTPS (DoH)';
+
+  @override
+  String get dns_provider => 'DNS Provider';
 }

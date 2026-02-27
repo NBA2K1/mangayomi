@@ -1,6 +1,6 @@
 import 'dart:io';
+import 'package:mangayomi/src/rust/api/epub.dart';
 import 'package:path/path.dart' as p;
-import 'package:epubx/epubx.dart';
 import 'package:html/parser.dart';
 import 'package:mangayomi/eval/lib.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -11,65 +11,69 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'get_html_content.g.dart';
 
 @riverpod
-Future<(String, EpubBook?)> getHtmlContent(
+Future<(String, EpubNovel?)> getHtmlContent(
   Ref ref, {
   required Chapter chapter,
 }) async {
   final keepAlive = ref.keepAlive();
-  (String, EpubBook?) result;
+  (String, EpubNovel?)? result;
   try {
     if (!chapter.manga.isLoaded) {
       chapter.manga.loadSync();
     }
     if (chapter.archivePath != null && chapter.archivePath!.isNotEmpty) {
-      final htmlFile = File(chapter.archivePath!);
+      try {
+        final book = await parseEpubFromPath(
+          epubPath: chapter.archivePath!,
+          fullData: true,
+        );
+        String htmlContent = "";
+        for (var subChapter in book.chapters) {
+          htmlContent += "\n<hr/>\n${subChapter.content}";
+        }
+        result = (_buildHtml(htmlContent), book);
+      } catch (_) {}
+
+      result ??= (_buildHtml("Local epub file not found!"), null);
+    }
+    if (result == null) {
+      final storageProvider = StorageProvider();
+      final mangaMainDirectory = await storageProvider.getMangaMainDirectory(
+        chapter,
+      );
+      final chapterDirectory = (await storageProvider.getMangaChapterDirectory(
+        chapter,
+        mangaMainDirectory: mangaMainDirectory,
+      ))!;
+
+      final htmlPath = p.join(chapterDirectory.path, "${chapter.name}.html");
+
+      final htmlFile = File(htmlPath);
+      String? htmlContent;
       if (await htmlFile.exists()) {
-        final bytes = await htmlFile.readAsBytes();
-        final book = await EpubReader.readBook(bytes);
-        final tempChapter = book.Chapters?.where(
-          (element) => element.Title!.isNotEmpty
-              ? element.Title == chapter.name
-              : "Book" == chapter.name,
-        ).firstOrNull;
-        result = (_buildHtml(tempChapter?.HtmlContent ?? "No content"), book);
+        htmlContent = await htmlFile.readAsString();
       }
-      result = (_buildHtml("Local epub file not found!"), null);
+      final source = getSource(
+        chapter.manga.value!.lang!,
+        chapter.manga.value!.source!,
+        chapter.manga.value!.sourceId,
+      );
+      final proxyServer = ref.read(androidProxyServerStateProvider);
+      final html = await withExtensionService(source!, proxyServer, (
+        service,
+      ) async {
+        if (htmlContent != null) {
+          return await service.cleanHtmlContent(htmlContent);
+        } else {
+          return await service.getHtmlContent(
+            chapter.manga.value!.name!,
+            chapter.url!,
+          );
+        }
+      });
+      result = (_buildHtml(html.substring(1, html.length - 1)), null);
     }
-    final storageProvider = StorageProvider();
-    final mangaMainDirectory = await storageProvider.getMangaMainDirectory(
-      chapter,
-    );
-    final chapterDirectory = (await storageProvider.getMangaChapterDirectory(
-      chapter,
-      mangaMainDirectory: mangaMainDirectory,
-    ))!;
 
-    final htmlPath = p.join(chapterDirectory.path, "${chapter.name}.html");
-
-    final htmlFile = File(htmlPath);
-    String? htmlContent;
-    if (await htmlFile.exists()) {
-      htmlContent = await htmlFile.readAsString();
-    }
-    final source = getSource(
-      chapter.manga.value!.lang!,
-      chapter.manga.value!.source!,
-      chapter.manga.value!.sourceId,
-    );
-    String? html;
-    final proxyServer = ref.read(androidProxyServerStateProvider);
-    if (htmlContent != null) {
-      html = await getExtensionService(
-        source!,
-        proxyServer,
-      ).cleanHtmlContent(htmlContent);
-    } else {
-      html = await getExtensionService(
-        source!,
-        proxyServer,
-      ).getHtmlContent(chapter.manga.value!.name!, chapter.url!);
-    }
-    result = (_buildHtml(html.substring(1, html.length - 1)), null);
     keepAlive.close();
     return result;
   } catch (e) {
@@ -91,10 +95,27 @@ String _buildHtml(String input) {
   // Parse HTML to clean it
   final document = parse(cleaned);
 
-  // Remove unwanted elements
+  // Remove unwanted elements (ads, tracking, etc.)
   document.querySelectorAll('iframe').forEach((el) => el.remove());
   document.querySelectorAll('script').forEach((el) => el.remove());
   document.querySelectorAll('[data-aa]').forEach((el) => el.remove());
+
+  // Improve styles for EPUB tables
+  document.querySelectorAll('table').forEach((table) {
+    table.attributes['style'] =
+        '${table.attributes['style'] ?? ''} border-collapse: collapse; width: 100%; margin: 10px 0;';
+  });
+
+  document.querySelectorAll('td, th').forEach((cell) {
+    cell.attributes['style'] =
+        '${cell.attributes['style'] ?? ''} border: 1px solid #ddd; padding: 8px;';
+  });
+
+  // Improve citations/blockquotes
+  document.querySelectorAll('blockquote').forEach((quote) {
+    quote.attributes['style'] =
+        '${quote.attributes['style'] ?? ''} border-left: 4px solid #ccc; padding-left: 15px; margin: 10px 0; font-style: italic;';
+  });
 
   // Get cleaned HTML
   String htmlContent = document.body?.innerHtml ?? cleaned;
