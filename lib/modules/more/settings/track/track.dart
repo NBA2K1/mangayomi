@@ -168,6 +168,8 @@ class TrackScreen extends ConsumerWidget {
 Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
   final passwordController = TextEditingController();
   final emailController = TextEditingController();
+  final emailFocusNode = FocusNode();
+  final passwordFocusNode = FocusNode();
   bool canLogin = false;
   String errorMessage = "";
   bool isLoading = false;
@@ -228,6 +230,7 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
                       controller: emailController,
+                      focusNode: emailFocusNode,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [
@@ -236,8 +239,7 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                       ],
                       autofocus: true,
                       onChanged: (_) => setState(updateCanLogin),
-                      onFieldSubmitted: (_) =>
-                          FocusScope.of(context).nextFocus(),
+                      onFieldSubmitted: (_) => passwordFocusNode.requestFocus(),
                       decoration: InputDecoration(
                         hintText: l10n.email_adress,
                         filled: false,
@@ -262,6 +264,7 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: TextFormField(
                       controller: passwordController,
+                      focusNode: passwordFocusNode,
                       obscureText: obscureText,
                       onChanged: (_) => setState(updateCanLogin),
                       keyboardType: TextInputType.visiblePassword,
@@ -327,4 +330,6 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
   );
   emailController.dispose();
   passwordController.dispose();
+  emailFocusNode.dispose();
+  passwordFocusNode.dispose();
 }
