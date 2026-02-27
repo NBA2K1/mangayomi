@@ -82,9 +82,7 @@ class TrackScreen extends ConsumerWidget {
                   entries: entries!,
                 ),
                 TrackListile(
-                  onTap: () async {
-                    _showDialogLogin(context, ref);
-                  },
+                  onTap: () => _showDialogLogin(context, ref),
                   id: TrackerProviders.kitsu.syncId,
                   entries: entries,
                 ),
@@ -167,16 +165,14 @@ class TrackScreen extends ConsumerWidget {
   }
 }
 
-void _showDialogLogin(BuildContext context, WidgetRef ref) {
+Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
   final passwordController = TextEditingController();
   final emailController = TextEditingController();
-  String email = "";
-  String password = "";
   String errorMessage = "";
   bool isLoading = false;
   bool obscureText = true;
   final l10n = l10nLocalizations(context)!;
-  showDialog(
+  await showDialog(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) {
@@ -206,9 +202,6 @@ void _showDialogLogin(BuildContext context, WidgetRef ref) {
                       autofocus: true,
                       onFieldSubmitted: (_) =>
                           FocusScope.of(context).nextFocus(),
-                      onChanged: (value) => setState(() {
-                        email = value;
-                      }),
                       decoration: InputDecoration(
                         hintText: l10n.email_adress,
                         filled: false,
@@ -239,9 +232,6 @@ void _showDialogLogin(BuildContext context, WidgetRef ref) {
                       enableSuggestions: false,
                       autocorrect: false,
                       autofillHints: const [AutofillHints.password],
-                      onChanged: (value) => setState(() {
-                        password = value;
-                      }),
                       decoration: InputDecoration(
                         hintText: l10n.password,
                         suffixIcon: IconButton(
@@ -285,7 +275,10 @@ void _showDialogLogin(BuildContext context, WidgetRef ref) {
                             : () async {
                                 setState(() {
                                   isLoading = true;
+                                  errorMessage = "";
                                 });
+                                final email = emailController.text.trim();
+                                final password = passwordController.text;
                                 final res = await ref
                                     .read(
                                       kitsuProvider(
@@ -320,4 +313,6 @@ void _showDialogLogin(BuildContext context, WidgetRef ref) {
       },
     ),
   );
+  emailController.dispose();
+  passwordController.dispose();
 }
