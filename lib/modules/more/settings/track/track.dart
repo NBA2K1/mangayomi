@@ -168,14 +168,49 @@ class TrackScreen extends ConsumerWidget {
 Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
   final passwordController = TextEditingController();
   final emailController = TextEditingController();
+  bool canLogin = false;
   String errorMessage = "";
   bool isLoading = false;
   bool obscureText = true;
   final l10n = l10nLocalizations(context)!;
+  void updateCanLogin() {
+    canLogin =
+        emailController.text.trim().isNotEmpty &&
+        passwordController.text.isNotEmpty;
+  }
+
   await showDialog(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) {
+        void doLogin() async {
+          setState(() {
+            isLoading = true;
+            errorMessage = "";
+          });
+          final email = emailController.text.trim();
+          final password = passwordController.text;
+          final res = await ref
+              .read(
+                kitsuProvider(
+                  syncId: TrackerProviders.kitsu.syncId,
+                  widgetRef: ref,
+                ).notifier,
+              )
+              .login(email, password);
+          if (!res.$1) {
+            setState(() {
+              isLoading = false;
+              errorMessage = res.$2;
+            });
+          } else {
+            TextInput.finishAutofillContext();
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          }
+        }
+
         return AlertDialog(
           title: Text(
             l10n.login_into("Kitsu"),
@@ -200,6 +235,7 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                         AutofillHints.username,
                       ],
                       autofocus: true,
+                      onChanged: (_) => setState(updateCanLogin),
                       onFieldSubmitted: (_) =>
                           FocusScope.of(context).nextFocus(),
                       decoration: InputDecoration(
@@ -227,8 +263,12 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                     child: TextFormField(
                       controller: passwordController,
                       obscureText: obscureText,
+                      onChanged: (_) => setState(updateCanLogin),
                       keyboardType: TextInputType.visiblePassword,
                       textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) {
+                        if (canLogin && !isLoading) doLogin();
+                      },
                       enableSuggestions: false,
                       autocorrect: false,
                       autofillHints: const [AutofillHints.password],
@@ -270,35 +310,7 @@ Future<void> _showDialogLogin(BuildContext context, WidgetRef ref) async {
                       width: context.width(1),
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: isLoading
-                            ? null
-                            : () async {
-                                setState(() {
-                                  isLoading = true;
-                                  errorMessage = "";
-                                });
-                                final email = emailController.text.trim();
-                                final password = passwordController.text;
-                                final res = await ref
-                                    .read(
-                                      kitsuProvider(
-                                        syncId: TrackerProviders.kitsu.syncId,
-                                        widgetRef: ref,
-                                      ).notifier,
-                                    )
-                                    .login(email, password);
-                                if (!res.$1) {
-                                  setState(() {
-                                    isLoading = false;
-                                    errorMessage = res.$2;
-                                  });
-                                } else {
-                                  TextInput.finishAutofillContext();
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                }
-                              },
+                        onPressed: (!canLogin || isLoading) ? null : doLogin,
                         child: isLoading
                             ? const CircularProgressIndicator()
                             : Text(l10n.login),
