@@ -5,6 +5,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
+import 'package:mangayomi/modules/manga/reader/reader_view.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -129,7 +130,8 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   }
 
   Future<void> _jumpTo() async {
-    await Future.delayed(const Duration(milliseconds: 5));
+    // Wait for the scroll view to layout before jumping
+    await WidgetsBinding.instance.endOfFrame;
     controller.jumpTo(
       controller.position.maxScrollExtent /
           chapterList.length *
@@ -209,6 +211,7 @@ class _ChapterListTileState extends State<ChapterListTile> {
           onTap: () async {
             if (!widget.currentChap) {
               Navigator.pop(context);
+              MangaChapterPageGalleryState.setNavigatingToChapter();
               pushReplacementMangaReaderView(
                 context: context,
                 chapter: chapter,

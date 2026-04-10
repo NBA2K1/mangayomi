@@ -264,6 +264,7 @@ class _AnimeStreamPageState extends riv.ConsumerState<AnimeStreamPage>
   late final _streamController = ref.read(
     animeStreamControllerProvider(episode: widget.episode).notifier,
   );
+  final Stopwatch _watchStopwatch = Stopwatch();
   late final _firstVid = widget.videos.first;
   late final ValueNotifier<VideoPrefs?> _video = ValueNotifier(
     VideoPrefs(
@@ -848,6 +849,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   @override
   void initState() {
     super.initState();
+    _watchStopwatch.start();
     _controller = VideoController(
       _player,
       configuration: VideoControllerConfiguration(
@@ -875,8 +877,11 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     } catch (_) {}
     if (_isDesktop && _firstTime) {
       final globalFullscreen = ref.read(fullScreenPlayerStateProvider);
-      setFullScreen(value: globalFullscreen);
-      Future.microtask(() {
+      // Delay fullscreen until after the first frame so the window is ready.
+      // On Windows, calling setFullScreen before the widget tree is built
+      // can silently fail, leaving the title bar visible.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setFullScreen(value: globalFullscreen);
         ref.read(fullscreenProvider.notifier).state = globalFullscreen;
         widget.desktopFullScreenPlayer.call(globalFullscreen);
       });
@@ -917,7 +922,10 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
+      _watchStopwatch.stop();
       _setCurrentPosition(true);
+    } else if (state == AppLifecycleState.resumed) {
+      _watchStopwatch.start();
     }
   }
 
@@ -976,11 +984,12 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
 
   @override
   void dispose() {
+    _watchStopwatch.stop();
     _currentPosition.removeListener(_updateRpcTimestamp);
     _subDelayController.removeListener(_onSubDelayChanged);
     _subSpeedController.removeListener(_onSubSpeedChanged);
     WidgetsBinding.instance.removeObserver(this);
-    _setCurrentPosition(true);
+    _setCurrentPosition(true, saveWatchTime: true);
     _player.stop();
     _completed.cancel();
     _currentPositionSub.cancel();
@@ -1005,13 +1014,15 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     super.dispose();
   }
 
-  void _setCurrentPosition(bool save) {
+  void _setCurrentPosition(bool save, {bool saveWatchTime = false}) {
     _streamController.setCurrentPosition(
       _currentPosition.value,
       _currentTotalDuration.value,
       save: save,
     );
-    _streamController.setAnimeHistoryUpdate();
+    _streamController.setAnimeHistoryUpdate(
+      watchTimeSeconds: saveWatchTime ? _watchStopwatch.elapsed.inSeconds : 0,
+    );
   }
 
   void _setLandscapeMode(bool state) {
@@ -1347,7 +1358,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
           GestureDetector(
             onTap: () async {
               try {
-                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                FilePickerResult? result = await FilePicker.pickFiles(
                   allowMultiple: false,
                 );
 
@@ -2014,7 +2025,8 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   }
 
   void _resize(BoxFit fit) async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    // Wait for the widget tree to settle before updating fit
+    await WidgetsBinding.instance.endOfFrame;
     if (mounted) {
       _key.currentState?.update(
         fit: fit,
