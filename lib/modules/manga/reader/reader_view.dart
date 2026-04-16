@@ -152,7 +152,9 @@ class _MangaChapterPageGalleryState
   );
 
   bool isDesktop = Platform.isMacOS || Platform.isLinux || Platform.isWindows;
-
+  final ValueNotifier<bool> _isScrolling = ValueNotifier(false);
+  Timer? _scrollIdleTimer;
+  bool _firstLaunch = true;
   final Stopwatch _readingStopwatch = Stopwatch();
 
   /// Flag to prevent fullscreen from being disabled when navigating between
@@ -174,6 +176,8 @@ class _MangaChapterPageGalleryState
     _autoScroll.value = false;
     _autoScroll.dispose();
     _autoScrollPage.dispose();
+    _scrollIdleTimer?.cancel();
+    _isScrolling.dispose();
     _itemPositionsListener.itemPositions.removeListener(_readProgressListener);
     _photoViewController.dispose();
     _photoViewScaleStateController.dispose();
@@ -458,6 +462,7 @@ class _MangaChapterPageGalleryState
                             ),
                             showPageGaps: ref.watch(showPageGapsStateProvider),
                             reverse: _isReverseHorizontal,
+                            isScrolling: _isScrolling,
                           )
                         : Material(
                             color: getBackgroundColor(backgroundColor),
@@ -956,12 +961,16 @@ class _MangaChapterPageGalleryState
     final itemPositions = _itemPositionsListener.itemPositions.value;
     if (itemPositions.isEmpty) return;
     _currentIndex = itemPositions.first.index;
+    if (!_isScrolling.value) _isScrolling.value = true;
+    _scrollIdleTimer?.cancel();
+    _scrollIdleTimer = Timer(const Duration(milliseconds: 150), () {
+      if (mounted) _isScrolling.value = false;
+    });
+    final currentReaderMode = ref.read(_currentReaderMode);
     int pagesLength =
         (_pageMode == PageMode.doublePage &&
-            !(ref.watch(_currentReaderMode) ==
-                    ReaderMode.horizontalContinuous ||
-                ref.watch(_currentReaderMode) ==
-                    ReaderMode.horizontalContinuousRTL))
+            currentReaderMode != ReaderMode.horizontalContinuous &&
+            currentReaderMode != ReaderMode.horizontalContinuousRTL)
         ? (pages.length / 2).ceil()
         : pages.length;
     if (_currentIndex! >= 0 && _currentIndex! < pagesLength) {
@@ -1179,11 +1188,6 @@ class _MangaChapterPageGalleryState
       });
     }
     _setReaderMode(readerMode, ref);
-    // if (pageCount > 0 && _currentIndex != null && _currentIndex! < pageCount) {
-    //   ref
-    //       .read(currentIndexProvider(chapter).notifier)
-    //       .setCurrentIndex(pages[_currentIndex!].index!);
-    // }
 
     if (readerMode != ReaderMode.verticalContinuous &&
         readerMode != ReaderMode.webtoon) {
@@ -1207,6 +1211,12 @@ class _MangaChapterPageGalleryState
     final cropBorders = ref.watch(cropBordersStateProvider);
     if (cropBorders) {
       _processCropBordersByIndex(index);
+    }
+    if (_firstLaunch) {
+      Future.delayed(const Duration(milliseconds: 100)).then((_) {
+        _firstLaunch = false;
+      });
+      return;
     }
     final idx = pages[prevActualIndex].index;
     if (idx != null) {
@@ -1470,7 +1480,7 @@ class _MangaChapterPageGalleryState
       _isDoublePageActive ? (pages.length / 2).ceil() : pages.length;
 
   bool _isContinuousMode() {
-    final readerMode = ref.watch(_currentReaderMode);
+    final readerMode = ref.read(_currentReaderMode);
     return readerMode == ReaderMode.verticalContinuous ||
         readerMode == ReaderMode.webtoon ||
         readerMode == ReaderMode.horizontalContinuous ||
