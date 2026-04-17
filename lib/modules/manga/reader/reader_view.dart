@@ -346,6 +346,9 @@ class _MangaChapterPageGalleryState
 
   @override
   Widget build(BuildContext context) {
+    final animatePageTransitions = ref.watch(
+      animatePageTransitionsStateProvider,
+    );
     final backgroundColor = ref.watch(backgroundColorStateProvider);
     final fullScreenReader = ref.watch(fullScreenReaderStateProvider);
     final readerMode = ref.watch(_currentReaderMode);
@@ -358,13 +361,13 @@ class _MangaChapterPageGalleryState
       onPreviousPage: () => navigationService.previousPage(
         readerMode: readerMode!,
         currentIndex: _currentIndex!,
-        animate: true,
+        animate: animatePageTransitions,
       ),
       onNextPage: () => navigationService.nextPage(
         readerMode: readerMode!,
         currentIndex: _currentIndex!,
         maxPages: _pageViewPageCount,
-        animate: true,
+        animate: animatePageTransitions,
       ),
       onEscape: () => _goBack(context),
       onFullScreen: () => _setFullScreen(),
@@ -758,13 +761,13 @@ class _MangaChapterPageGalleryState
                           onPreviousPage: () => navigationService.previousPage(
                             readerMode: readerMode!,
                             currentIndex: _currentIndex!,
-                            animate: true,
+                            animate: animatePageTransitions,
                           ),
                           onNextPage: () => navigationService.nextPage(
                             readerMode: readerMode!,
                             currentIndex: _currentIndex!,
                             maxPages: _pageViewPageCount,
-                            animate: true,
+                            animate: animatePageTransitions,
                           ),
                           onDoubleTapDown: (position) => _toggleScale(position),
                           onDoubleTap: () {},
