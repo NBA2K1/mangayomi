@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/custom_button.dart';
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/custom_buttons_provider.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -78,10 +79,7 @@ class _CustomButtonScreenState extends ConsumerState<CustomButtonScreen> {
                                     button.isFavourite =
                                         button.id == customButton.id;
                                   }
-                                  await isar.writeTxn(
-                                    () async =>
-                                        await isar.customButtons.putAll(data),
-                                  );
+                                  await isar.customButtons.putAllAndSave(data);
                                 },
                                 icon: Icon(
                                   (customButton.isFavourite ?? false)
@@ -128,9 +126,7 @@ class _CustomButtonScreenState extends ConsumerState<CustomButtonScreen> {
                   }
                   data[newIndex].pos = draggedItemPos;
                 }
-                await isar.writeTxn(
-                  () async => await isar.customButtons.putAll(data),
-                );
+                await isar.customButtons.putAllAndSave(data);
               },
             ),
           );
@@ -273,17 +269,14 @@ class _CustomButtonScreenState extends ConsumerState<CustomButtonScreen> {
                                       codeStartup: "",
                                       pos: await isar.customButtons.count(),
                                     );
-                                await isar.writeTxn(() async {
-                                  await isar.customButtons.put(
-                                    button
-                                      ..title = titleController.text
-                                      ..codePress = codePressController.text
-                                      ..codeLongPress =
-                                          codeLongPressController.text
-                                      ..codeStartup =
-                                          codeStartupController.text,
-                                  );
-                                });
+                                await isar.customButtons.putAndSave(
+                                  button
+                                    ..title = titleController.text
+                                    ..codePress = codePressController.text
+                                    ..codeLongPress =
+                                        codeLongPressController.text
+                                    ..codeStartup = codeStartupController.text,
+                                );
                                 if (context.mounted) {
                                   Navigator.pop(context);
                                 }

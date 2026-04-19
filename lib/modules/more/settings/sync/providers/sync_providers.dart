@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/changed.dart';
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/sync_preference.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -155,39 +156,31 @@ class Synching extends _$Synching {
     ActionType action,
     int? isarId,
     Object data,
-    bool writeTxn,
   ) async {
-    if (!state.syncOn) {
-      return;
-    }
-    final changedPart = isar.changedParts
+    if (!state.syncOn) return;
+    final changedPart = await isar.changedParts
         .filter()
         .actionTypeEqualTo(action)
         .isarIdEqualTo(isarId)
-        .findFirstSync();
-    Future<void> putChangedPart() async {
-      if (changedPart != null) {
-        await isar.changedParts.put(
-          changedPart
-            ..data = jsonEncode(data)
-            ..clientDate = DateTime.now().millisecondsSinceEpoch,
-        );
-      } else {
-        await isar.changedParts.put(
-          ChangedPart(
-            actionType: action,
-            isarId: isarId,
-            data: jsonEncode(data),
-            clientDate: DateTime.now().millisecondsSinceEpoch,
-          ),
-        );
-      }
-    }
+        .findFirst();
+    final newData = jsonEncode(data);
+    final now = DateTime.now().millisecondsSinceEpoch;
 
-    if (writeTxn) {
-      await isar.writeTxn(putChangedPart);
+    if (changedPart != null) {
+      await isar.changedParts.putAndSave(
+        changedPart
+          ..data = newData
+          ..clientDate = now,
+      );
     } else {
-      await putChangedPart();
+      await isar.changedParts.putAndSave(
+        ChangedPart(
+          actionType: action,
+          isarId: isarId,
+          data: newData,
+          clientDate: now,
+        ),
+      );
     }
   }
 

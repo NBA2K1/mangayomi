@@ -16,6 +16,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/models/custom_button.dart';
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
@@ -382,16 +383,14 @@ class _MyAppState extends ConsumerState<MyApp>
                         child: Text(l10n.add),
                         onPressed: () async {
                           if (context.mounted) Navigator.of(context).pop();
-                          await isar.writeTxn(() async {
-                            await isar.customButtons.put(
-                              customButton
-                                ..pos = await isar.customButtons.count()
-                                ..isFavourite = false
-                                ..id = null
-                                ..updatedAt =
-                                    DateTime.now().millisecondsSinceEpoch,
-                            );
-                          });
+                          await isar.customButtons.putAndSave(
+                            customButton
+                              ..pos = await isar.customButtons.count()
+                              ..isFavourite = false
+                              ..id = null
+                              ..updatedAt =
+                                  DateTime.now().millisecondsSinceEpoch,
+                          );
                           botToast(l10n.custom_buttons_added);
                         },
                       ),

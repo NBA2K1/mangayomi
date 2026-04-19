@@ -3,6 +3,7 @@ import 'dart:io'; // For I/O-operations
 import 'dart:typed_data';
 import 'package:isar_community/isar.dart'; // Isar database package for local storage
 import 'package:mangayomi/main.dart'; // Exposes the global `isar` instance
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/src/rust/api/epub.dart';
@@ -246,7 +247,7 @@ Future<void> _scanDirectory(Ref ref, Directory? dir) async {
   }
   try {
     // Save all new and changed items to the library
-    await isar.writeTxn(() async => await isar.mangas.putAll(changedMangas));
+    await isar.mangas.putAllAndSave(changedMangas);
   } catch (e) {
     BotToast.showText(
       text: "Database write error. Manga/Anime couldn't be saved: $e",
@@ -351,27 +352,19 @@ Future<void> _scanDirectory(Ref ref, Directory? dir) async {
   try {
     if (saveManga > 0) {
       // Just to update the lastUpdate value of not new Mangas
-      await isar.writeTxn(
-        () async => await isar.mangas.putAll(processedMangas),
-      );
+      await isar.mangas.putAllAndSave(processedMangas);
     }
   } catch (e) {
     BotToast.showText(text: "Error saving chapter/episode to library: $e");
   }
   try {
     if (chaptersToSave.isNotEmpty) {
-      await isar.writeTxn(() async {
-        // insert chapters
-        await isar.chapters.putAll(chaptersToSave);
-
-        // for each one, set its link and save it
-        for (final chap in chaptersToSave) {
-          chap.manga.value = processedMangas.firstWhere(
-            (m) => m.id == chap.mangaId,
-          );
-          await chap.manga.save();
-        }
-      });
+      for (final chap in chaptersToSave) {
+        chap.manga.value = processedMangas.firstWhere(
+          (m) => m.id == chap.mangaId,
+        );
+      }
+      await isar.chapters.putAllAndSave(chaptersToSave);
     }
   } catch (e) {
     BotToast.showText(

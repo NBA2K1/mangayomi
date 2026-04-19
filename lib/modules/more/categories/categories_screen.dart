@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/changed.dart';
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
 import 'package:mangayomi/modules/more/categories/widgets/custom_textfield.dart';
@@ -143,7 +144,7 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab>
     a.pos = b.pos;
     b.pos = temp;
     // Persist both updated objects in a single Isar transaction
-    await isar.writeTxn(() async => isar.categorys.putAll([a, b]));
+    await isar.categorys.putAllAndSave([a, b]);
 
     if (mounted) {
       setState(() {
@@ -405,13 +406,11 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab>
                     SizedBox(width: 10),
                     IconButton(
                       onPressed: () async {
-                        await isar.writeTxn(() async {
-                          category.shouldUpdate =
-                              !(category.shouldUpdate ?? true);
-                          category.updatedAt =
-                              DateTime.now().millisecondsSinceEpoch;
-                          isar.categorys.put(category);
-                        });
+                        category.shouldUpdate =
+                            !(category.shouldUpdate ?? true);
+                        category.updatedAt =
+                            DateTime.now().millisecondsSinceEpoch;
+                        await isar.categorys.putAndSave(category);
                       },
                       icon: Icon(
                         category.shouldUpdate ?? true
@@ -422,12 +421,10 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab>
                     SizedBox(width: 10),
                     IconButton(
                       onPressed: () async {
-                        await isar.writeTxn(() async {
-                          category.hide = !(category.hide ?? false);
-                          category.updatedAt =
-                              DateTime.now().millisecondsSinceEpoch;
-                          isar.categorys.put(category);
-                        });
+                        category.hide = !(category.hide ?? false);
+                        category.updatedAt =
+                            DateTime.now().millisecondsSinceEpoch;
+                        await isar.categorys.putAndSave(category);
                       },
                       icon: Icon(
                         !(category.hide ?? false)
@@ -490,35 +487,28 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab>
   }
 
   Future<void> _removeCategory(Category category, BuildContext context) async {
-    await isar.writeTxn(() async {
-      // All Items with this category
-      final allItems = await isar.mangas
-          .filter()
-          .categoriesElementEqualTo(category.id!)
-          .findAll();
-      // Remove the category ID from each item's category list
-      final updatedItems = allItems.map((manga) {
-        final cats = List<int>.from(manga.categories ?? []);
-        cats.remove(category.id!);
-        manga.categories = cats;
-        return manga;
-      }).toList();
+    // All Items with this category
+    final allItems = await isar.mangas
+        .filter()
+        .categoriesElementEqualTo(category.id!)
+        .findAll();
+    // Remove the category ID from each item's category list
+    final updatedItems = allItems.map((manga) {
+      final cats = List<int>.from(manga.categories ?? []);
+      cats.remove(category.id!);
+      manga.categories = cats;
+      return manga;
+    }).toList();
 
-      // Save updated items back to the database
-      await isar.mangas.putAll(updatedItems);
+    // Save updated items back to the database
+    await isar.mangas.putAllAndSave(updatedItems);
 
-      // Delete category
-      await isar.categorys.delete(category.id!);
-    });
+    // Delete category
+    await isar.writeTxn(() async => await isar.categorys.delete(category.id!));
 
     await ref
         .read(synchingProvider(syncId: 1).notifier)
-        .addChangedPartAsync(
-          ActionType.removeCategory,
-          category.id,
-          "{}",
-          true,
-        );
+        .addChangedPartAsync(ActionType.removeCategory, category.id, "{}");
     if (context.mounted) {
       Navigator.pop(context);
     }
@@ -569,12 +559,10 @@ class _CategoriesTabState extends ConsumerState<CategoriesTab>
                           controller.text.isEmpty || isExist || isSameName
                           ? null
                           : () async {
-                              await isar.writeTxn(() async {
-                                category.name = controller.text;
-                                category.updatedAt =
-                                    DateTime.now().millisecondsSinceEpoch;
-                                await isar.categorys.put(category);
-                              });
+                              category.name = controller.text;
+                              category.updatedAt =
+                                  DateTime.now().millisecondsSinceEpoch;
+                              await isar.categorys.putAndSave(category);
                               if (context.mounted) {
                                 Navigator.pop(context);
                               }

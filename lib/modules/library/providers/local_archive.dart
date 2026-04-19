@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/chapter.dart';
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/manga/archive_reader/models/models.dart';
 import 'package:mangayomi/modules/manga/archive_reader/providers/archive_reader_providers.dart';
@@ -67,61 +68,56 @@ Future importArchivesFromFile(
             manga.customCoverImage = data!.$3.getCoverImage;
           }
         }
-        await isar.writeTxn(() async {
-          final mangaId = await isar.mangas.put(manga);
-          final List<Chapter> chapters = [];
-          if (itemType == ItemType.novel) {
-            final book = await parseEpubFromPath(
-              epubPath: file.path!,
-              fullData: splitChapters,
+        final mangaId = await isar.mangas.putAndSave(manga);
+        final List<Chapter> chapters = [];
+        if (itemType == ItemType.novel) {
+          final book = await parseEpubFromPath(
+            epubPath: file.path!,
+            fullData: splitChapters,
+          );
+
+          if (book.cover != null) {
+            await isar.mangas.putAndSave(
+              manga..customCoverImage = book.cover!.getCoverImage,
             );
+          }
+          final chaps = book.chapters;
 
-            if (book.cover != null) {
-              await isar.mangas.put(
-                manga..customCoverImage = book.cover!.getCoverImage,
-              );
-            }
-            final chaps = book.chapters;
-
-            if (splitChapters && chaps.isNotEmpty) {
-              for (int i = 0; i < chaps.length; i++) {
-                final epubChapter = chaps[i];
-                chapters.add(
-                  Chapter(
-                    mangaId: mangaId,
-                    name: epubChapter.name,
-                    archivePath: file.path,
-                    url: epubChapter.path,
-                    updatedAt: DateTime.now().millisecondsSinceEpoch,
-                  )..manga.value = manga,
-                );
-              }
-            } else {
-              // Fallback: single chapter if no spine chapters found
+          if (splitChapters && chaps.isNotEmpty) {
+            for (int i = 0; i < chaps.length; i++) {
+              final epubChapter = chaps[i];
               chapters.add(
                 Chapter(
                   mangaId: mangaId,
-                  name: book.name,
+                  name: epubChapter.name,
                   archivePath: file.path,
+                  url: epubChapter.path,
                   updatedAt: DateTime.now().millisecondsSinceEpoch,
                 )..manga.value = manga,
               );
             }
           } else {
+            // Fallback: single chapter if no spine chapters found
             chapters.add(
               Chapter(
-                name: itemType == ItemType.manga ? data!.$1 : name,
-                archivePath: itemType == ItemType.manga ? data!.$4 : file.path,
-                mangaId: manga.id,
+                mangaId: mangaId,
+                name: book.name,
+                archivePath: file.path,
                 updatedAt: DateTime.now().millisecondsSinceEpoch,
               )..manga.value = manga,
             );
           }
-          for (final chapter in chapters) {
-            await isar.chapters.put(chapter);
-            await chapter.manga.save();
-          }
-        });
+        } else {
+          chapters.add(
+            Chapter(
+              name: itemType == ItemType.manga ? data!.$1 : name,
+              archivePath: itemType == ItemType.manga ? data!.$4 : file.path,
+              mangaId: mangaId,
+              updatedAt: DateTime.now().millisecondsSinceEpoch,
+            )..manga.value = manga,
+          );
+        }
+        await isar.chapters.putAllAndSave(chapters);
       }
     }
     keepAlile.close();

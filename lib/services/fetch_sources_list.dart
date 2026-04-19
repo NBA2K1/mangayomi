@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/source_preference.dart';
 import 'package:mangayomi/main.dart';
+import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
@@ -143,9 +144,9 @@ Future<void> fetchSourcesList({
       if (autoUpdateExtensions) {
         await _updateSource(source, androidProxyServer, repo, itemType);
       } else {
-        await isar.writeTxn(() async {
-          isar.sources.put(existingSource..versionLast = source.version);
-        });
+        await isar.sources.putAndSave(
+          existingSource..versionLast = source.version,
+        );
       }
     }
   }
@@ -223,7 +224,7 @@ Future<void> _updateSource(
     ..repo = repo
     ..updatedAt = DateTime.now().millisecondsSinceEpoch;
 
-  await isar.writeTxn(() async => isar.sources.put(updatedSource));
+  await isar.sources.putAndSave(updatedSource);
 }
 
 Future<void> _addNewSource(Source source, Repo? repo, ItemType itemType) async {
@@ -251,7 +252,7 @@ Future<void> _addNewSource(Source source, Repo? repo, ItemType itemType) async {
     ..notes = source.notes
     ..repo = repo
     ..updatedAt = DateTime.now().millisecondsSinceEpoch;
-  await isar.writeTxn(() async => isar.sources.put(newSource));
+  await isar.sources.putAndSave(newSource);
 }
 
 Future<void> checkIfSourceIsObsolete(
@@ -291,7 +292,7 @@ Future<void> checkIfSourceIsObsolete(
   }
   if (toUpdate.isEmpty) return;
 
-  await isar.writeTxn(() => isar.sources.putAll(toUpdate));
+  await isar.sources.putAllAndSave(toUpdate);
 }
 
 int compareVersions(String version1, String version2) {
