@@ -1,10 +1,11 @@
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 import 'package:mangayomi/models/manga.dart';
 part 'track.g.dart';
 
 @collection
 @Name("Track")
-class Track {
+class Track with IsarLinkSaver {
   Id? id;
 
   int? libraryId;
@@ -96,6 +97,11 @@ class Track {
     'itemType': itemType.index,
     'updatedAt': updatedAt ?? 0,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    // No IsarLinks to save. Only for compatibility.
+  }
 }
 
 enum TrackStatus {

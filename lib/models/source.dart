@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/filter.dart';
 import 'package:mangayomi/eval/model/m_source.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 part 'source.g.dart';
 
 @collection
 @Name("Sources")
-class Source {
+class Source with IsarLinkSaver {
   Id? id;
 
   String? name;
@@ -213,6 +214,11 @@ class Source {
       dateFormatLocale: dateFormatLocale,
       additionalParams: additionalParams,
     );
+  }
+
+  @override
+  Future<void> saveLinks() async {
+    // No IsarLinks to save. Only for compatibility.
   }
 }
 

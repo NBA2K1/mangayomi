@@ -1,9 +1,10 @@
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 part 'track_preference.g.dart';
 
 @collection
 @Name("Track Preference")
-class TrackPreference {
+class TrackPreference with IsarLinkSaver {
   Id? syncId;
 
   String? username;
@@ -35,4 +36,9 @@ class TrackPreference {
     'oAuth': oAuth,
     'prefs': prefs,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    // No IsarLinks to save. Only for compatibility.
+  }
 }

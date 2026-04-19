@@ -1,9 +1,10 @@
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 part 'changed.g.dart';
 
 @collection
 @Name("ChangedPart")
-class ChangedPart {
+class ChangedPart with IsarLinkSaver {
   Id? id;
   @enumerated
   late ActionType actionType;
@@ -25,6 +26,11 @@ class ChangedPart {
     'data': data,
     'clientDate': clientDate,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    // No IsarLinks to save. Only for compatibility.
+  }
 }
 
 enum ActionType {

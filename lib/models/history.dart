@@ -1,11 +1,12 @@
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/models/chapter.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 import 'package:mangayomi/models/manga.dart';
 part 'history.g.dart';
 
 @collection
 @Name("History")
-class History {
+class History with IsarLinkSaver {
   Id? id;
 
   int? mangaId;
@@ -56,4 +57,9 @@ class History {
     'updatedAt': updatedAt ?? 0,
     'readingTimeSeconds': readingTimeSeconds ?? 0,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    await chapter.save();
+  }
 }

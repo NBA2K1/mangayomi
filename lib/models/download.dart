@@ -1,11 +1,12 @@
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/models/chapter.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 
 part 'download.g.dart';
 
 @collection
 @Name("Download")
-class Download {
+class Download with IsarLinkSaver {
   Id? id;
 
   int? succeeded;
@@ -45,4 +46,9 @@ class Download {
     'succeeded': succeeded,
     'total': total,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    await chapter.save();
+  }
 }

@@ -1,10 +1,11 @@
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 import 'package:mangayomi/models/manga.dart';
 part 'category.g.dart';
 
 @collection
 @Name("Category")
-class Category {
+class Category with IsarLinkSaver {
   Id? id;
   String? name;
   bool? forManga;
@@ -54,4 +55,9 @@ class Category {
     'shouldUpdate': shouldUpdate,
     'updatedAt': updatedAt ?? 0,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    // No IsarLinks to save. Only for compatibility.
+  }
 }

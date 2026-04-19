@@ -1,9 +1,10 @@
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/models/isar_link_saver.dart';
 part 'sync_preference.g.dart';
 
 @collection
 @Name("Sync Preference")
-class SyncPreference {
+class SyncPreference with IsarLinkSaver {
   Id? syncId;
 
   String? email;
@@ -68,4 +69,9 @@ class SyncPreference {
     'syncUpdates': syncUpdates,
     'syncSettings': syncSettings,
   };
+
+  @override
+  Future<void> saveLinks() async {
+    // No IsarLinks to save. Only for compatibility.
+  }
 }
