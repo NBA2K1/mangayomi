@@ -353,28 +353,26 @@ Future<void> pushToMangaReaderDetail({
   final exists =
       settings!.sortChapterList?.any((e) => e.mangaId == mangaId) ?? false;
   if (!exists) {
-    await isar.writeTxn(() async {
-      settings
-        ..sortChapterList = [
-          ...(settings.sortChapterList ?? []),
-          SortChapter()..mangaId = mangaId,
-        ]
-        ..chapterFilterBookmarkedList = [
-          ...(settings.chapterFilterBookmarkedList ?? []),
-          ChapterFilterBookmarked()..mangaId = mangaId,
-        ]
-        ..chapterFilterDownloadedList = [
-          ...(settings.chapterFilterDownloadedList ?? []),
-          ChapterFilterDownloaded()..mangaId = mangaId,
-        ]
-        ..chapterFilterUnreadList = [
-          ...(settings.chapterFilterUnreadList ?? []),
-          ChapterFilterUnread()..mangaId = mangaId,
-        ]
-        ..updatedAt = DateTime.now().millisecondsSinceEpoch;
+    settings
+      ..sortChapterList = [
+        ...(settings.sortChapterList ?? []),
+        SortChapter()..mangaId = mangaId,
+      ]
+      ..chapterFilterBookmarkedList = [
+        ...(settings.chapterFilterBookmarkedList ?? []),
+        ChapterFilterBookmarked()..mangaId = mangaId,
+      ]
+      ..chapterFilterDownloadedList = [
+        ...(settings.chapterFilterDownloadedList ?? []),
+        ChapterFilterDownloaded()..mangaId = mangaId,
+      ]
+      ..chapterFilterUnreadList = [
+        ...(settings.chapterFilterUnreadList ?? []),
+        ChapterFilterUnread()..mangaId = mangaId,
+      ]
+      ..updatedAt = DateTime.now().millisecondsSinceEpoch;
 
-      await isar.settings.putAndSave(settings);
-    });
+    await isar.settings.putAndSave(settings);
   }
   if (!addToFavourite) {
     if (context.mounted) {
