@@ -98,24 +98,26 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
   }
 
   Future<void> _updateLibrary() async {
-    setState(() => _isLoading = true);
-    final itemType = getCurrentItemType();
-    final mangaList = isar.mangas
-        .filter()
-        .idIsNotNull()
-        .favoriteEqualTo(true)
-        .and()
-        .itemTypeEqualTo(itemType)
-        .and()
-        .isLocalArchiveEqualTo(false)
-        .findAllSync();
-    await updateLibrary(
-      ref: ref,
-      context: context,
-      mangaList: mangaList,
-      itemType: itemType,
-    );
-    setState(() => _isLoading = false);
+    try {
+      setState(() => _isLoading = true);
+      final itemType = getCurrentItemType();
+      final mangaList = await isar.mangas
+          .filter()
+          .idIsNotNull()
+          .favoriteEqualTo(true)
+          .itemTypeEqualTo(itemType)
+          .isLocalArchiveEqualTo(false)
+          .findAll();
+      if (!mounted) return;
+      await updateLibrary(
+        ref: ref,
+        context: context,
+        mangaList: mangaList,
+        itemType: itemType,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _clearUpdates() async {
@@ -124,16 +126,13 @@ class _UpdatesScreenState extends BaseLibraryTabScreenState<UpdatesScreen> {
         .idIsNotNull()
         .chapter((q) => q.manga((q) => q.itemTypeEqualTo(getCurrentItemType())))
         .findAll();
-    final idsToDelete = <Id>[];
-    isar.writeTxnSync(() {
-      for (var update in updates) {
-        idsToDelete.add(update.id!);
-        ref
-            .read(synchingProvider(syncId: 1).notifier)
-            .addChangedPart(ActionType.removeUpdate, update.id, "{}", false);
-      }
-    });
-    await isar.writeTxn(() => isar.updates.deleteAll(idsToDelete));
+    if (updates.isEmpty) return;
+    final notifier = ref.read(synchingProvider(syncId: 1).notifier);
+    final idsToDelete = updates.map((u) => u.id!).toList();
+    for (final id in idsToDelete) {
+      await notifier.addChangedPartAsync(ActionType.removeUpdate, id, "{}");
+    }
+    await isar.writeTxn(() async => await isar.updates.deleteAll(idsToDelete));
   }
 }
 
@@ -273,25 +272,18 @@ Widget _updateNumbers(WidgetRef ref, ItemType itemType) {
     stream: isar.updates
         .filter()
         .idIsNotNull()
-        .and()
         .chapter((q) => q.manga((q) => q.itemTypeEqualTo(itemType)))
         .watch(fireImmediately: true),
     builder: (context, snapshot) {
-      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-        final entries = snapshot.data!.toList();
-        return entries.isEmpty
-            ? SizedBox.shrink()
-            : Badge(
-                backgroundColor: Theme.of(context).focusColor,
-                label: Text(
-                  entries.length.toString(),
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall!.color,
-                  ),
-                ),
-              );
-      }
-      return Container();
+      final count = snapshot.data?.length ?? 0;
+      if (count == 0) return const SizedBox.shrink();
+      return Badge(
+        backgroundColor: Theme.of(context).focusColor,
+        label: Text(
+          count.toString(),
+          style: TextStyle(color: Theme.of(context).textTheme.bodySmall!.color),
+        ),
+      );
     },
   );
 }
