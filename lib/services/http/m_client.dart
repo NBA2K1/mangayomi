@@ -9,7 +9,6 @@ import 'package:mangayomi/eval/model/m_source.dart';
 import 'package:mangayomi/main.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart'
     as flutter_inappwebview;
-import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:http/io_client.dart';
 import 'package:mangayomi/services/http/rhttp/src/model/settings.dart';
@@ -143,14 +142,18 @@ class MClient {
           ..host = host
           ..cookie = newCookie,
       );
-      await isar.settings.putAndSave(settings..cookiesList = filteredCookies);
+      await isar.writeTxn(
+        () => isar.settings.put(settings..cookiesList = filteredCookies),
+      );
     }
     if (ua.isNotEmpty) {
       final settings = await isar.settings.get(227);
-      await isar.settings.putAndSave(
-        settings!
-          ..userAgent = ua
-          ..updatedAt = DateTime.now().millisecondsSinceEpoch,
+      await isar.writeTxn(
+        () => isar.settings.put(
+          settings!
+            ..userAgent = ua
+            ..updatedAt = DateTime.now().millisecondsSinceEpoch,
+        ),
       );
     }
   }
@@ -169,7 +172,7 @@ class MClient {
     final oldCookies = settings!.cookiesList ?? [];
     final host = Uri.parse(url).host;
     settings.cookiesList = removeCookiesForHost(oldCookies, host);
-    await isar.settings.putAndSave(settings);
+    await isar.writeTxn(() => isar.settings.put(settings));
   }
 }
 

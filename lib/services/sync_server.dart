@@ -6,7 +6,6 @@ import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/changed.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/history.dart';
-import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/track.dart';
@@ -282,26 +281,24 @@ class SyncServer extends _$SyncServer {
             ?.map((e) => Category.fromJson(e))
             .toList() ??
         [];
-    final existing = await isar.categorys.filter().idIsNotNull().findAll();
-    final toUpdate = <Category>[];
-    final toInsert = <Category>[];
-    final toDelete = <int>[];
-    for (final category in existing) {
-      final temp = categories.firstWhereOrNull((e) => e.id == category.id);
-      if (temp != null) {
-        if ((category.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
-          toUpdate.add(temp);
+    await isar.writeTxn(() async {
+      for (var category
+          in await isar.categorys.filter().idIsNotNull().findAll()) {
+        final temp = categories.firstWhereOrNull((e) => e.id == category.id);
+        if (temp != null) {
+          if ((category.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
+            await isar.categorys.put(temp);
+          }
+          categories.remove(temp);
+        } else {
+          await isar.categorys.delete(category.id!);
         }
-        categories.remove(temp);
-      } else {
-        toDelete.add(category.id!);
       }
-    }
-    toInsert.addAll(categories);
-    if (toDelete.isNotEmpty) await isar.categorys.deleteAll(toDelete);
-    if (toUpdate.isNotEmpty) await isar.categorys.putAllAndSave(toUpdate);
-    if (toInsert.isNotEmpty) await isar.categorys.putAllAndSave(toInsert);
-    await syncNotifier.clearChangedParts([ActionType.removeCategory], false);
+      for (var category in categories) {
+        await isar.categorys.put(category);
+      }
+      await syncNotifier.clearChangedParts([ActionType.removeCategory], false);
+    });
   }
 
   Future<void> _upsertManga(
@@ -311,26 +308,23 @@ class SyncServer extends _$SyncServer {
     final mangas =
         (jsonData["manga"] as List?)?.map((e) => Manga.fromJson(e)).toList() ??
         [];
-    final existing = await isar.mangas.filter().idIsNotNull().findAll();
-    final toUpdate = <Manga>[];
-    final toInsert = <Manga>[];
-    final toDelete = <int>[];
-    for (var manga in existing) {
-      final temp = mangas.firstWhereOrNull((e) => e.id == manga.id);
-      if (temp != null) {
-        if ((manga.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
-          toUpdate.add(temp);
+    await isar.writeTxn(() async {
+      for (var manga in await isar.mangas.filter().idIsNotNull().findAll()) {
+        final temp = mangas.firstWhereOrNull((e) => e.id == manga.id);
+        if (temp != null) {
+          if ((manga.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
+            await isar.mangas.put(temp);
+          }
+          mangas.remove(temp);
+        } else {
+          await isar.mangas.delete(manga.id!);
         }
-        mangas.remove(temp);
-      } else {
-        toDelete.add(manga.id!);
       }
-    }
-    toInsert.addAll(mangas);
-    if (toDelete.isNotEmpty) await isar.mangas.deleteAll(toDelete);
-    if (toUpdate.isNotEmpty) await isar.mangas.putAllAndSave(toUpdate);
-    if (toInsert.isNotEmpty) await isar.mangas.putAllAndSave(toInsert);
-    await syncNotifier.clearChangedParts([ActionType.removeItem], false);
+      for (var manga in mangas) {
+        await isar.mangas.put(manga);
+      }
+      await syncNotifier.clearChangedParts([ActionType.removeItem], false);
+    });
   }
 
   Future<void> _upsertChapters(
@@ -342,34 +336,31 @@ class SyncServer extends _$SyncServer {
             ?.map((e) => Chapter.fromJson(e))
             .toList() ??
         [];
-    final existing = await isar.chapters.filter().idIsNotNull().findAll();
-    final toUpdate = <Chapter>[];
-    final toInsert = <Chapter>[];
-    final toDelete = <int>[];
-    for (var chapter in existing) {
-      final temp = chapters.firstWhereOrNull((e) => e.id == chapter.id);
-      if (temp != null) {
-        final manga = await isar.mangas.get(temp.mangaId!);
-        if (manga != null && (chapter.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
-          temp.manga.value = manga;
-          toUpdate.add(temp);
+    await isar.writeTxn(() async {
+      for (var chapter
+          in await isar.chapters.filter().idIsNotNull().findAll()) {
+        final temp = chapters.firstWhereOrNull((e) => e.id == chapter.id);
+        if (temp != null) {
+          final manga = await isar.mangas.get(temp.mangaId!);
+          if (manga != null &&
+              (chapter.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
+            await isar.chapters.put(temp..manga.value = manga);
+            await temp.manga.save();
+          }
+          chapters.remove(temp);
+        } else {
+          await isar.chapters.delete(chapter.id!);
         }
-        chapters.remove(temp);
-      } else {
-        toDelete.add(chapter.id!);
       }
-    }
-    for (var chapter in chapters) {
-      final manga = await isar.mangas.get(chapter.mangaId!);
-      if (manga != null) {
-        chapter.manga.value = manga;
-        toInsert.add(chapter);
+      for (var chapter in chapters) {
+        final manga = await isar.mangas.get(chapter.mangaId!);
+        if (manga != null) {
+          await isar.chapters.put(chapter..manga.value = manga);
+          await chapter.manga.save();
+        }
       }
-    }
-    if (toDelete.isNotEmpty) await isar.chapters.deleteAll(toDelete);
-    if (toUpdate.isNotEmpty) await isar.chapters.putAllAndSave(toUpdate);
-    if (toInsert.isNotEmpty) await isar.chapters.putAllAndSave(toInsert);
-    await syncNotifier.clearChangedParts([ActionType.removeChapter], false);
+      await syncNotifier.clearChangedParts([ActionType.removeChapter], false);
+    });
   }
 
   Future<void> _upsertTracks(
@@ -379,26 +370,23 @@ class SyncServer extends _$SyncServer {
     final tracks =
         (jsonData["tracks"] as List?)?.map((e) => Track.fromJson(e)).toList() ??
         [];
-    final existing = await isar.tracks.filter().idIsNotNull().findAll();
-    final toUpdate = <Track>[];
-    final toInsert = <Track>[];
-    final toDelete = <int>[];
-    for (var track in existing) {
-      final temp = tracks.firstWhereOrNull((e) => e.id == track.id);
-      if (temp != null) {
-        if ((track.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
-          toUpdate.add(temp);
+    await isar.writeTxn(() async {
+      for (var track in await isar.tracks.filter().idIsNotNull().findAll()) {
+        final temp = tracks.firstWhereOrNull((e) => e.id == track.id);
+        if (temp != null) {
+          if ((track.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
+            await isar.tracks.put(temp);
+          }
+          tracks.remove(temp);
+        } else {
+          await isar.tracks.delete(track.id!);
         }
-        tracks.remove(temp);
-      } else {
-        toDelete.add(track.id!);
       }
-    }
-    toInsert.addAll(tracks);
-    if (toDelete.isNotEmpty) await isar.tracks.deleteAll(toDelete);
-    if (toUpdate.isNotEmpty) await isar.tracks.putAllAndSave(toUpdate);
-    if (toInsert.isNotEmpty) await isar.tracks.putAllAndSave(toInsert);
-    await syncNotifier.clearChangedParts([ActionType.removeTrack], false);
+      for (var track in tracks) {
+        await isar.tracks.put(track);
+      }
+      await syncNotifier.clearChangedParts([ActionType.removeTrack], false);
+    });
   }
 
   Future<void> _upsertHistories(
@@ -410,35 +398,31 @@ class SyncServer extends _$SyncServer {
             ?.map((e) => History.fromJson(e))
             .toList() ??
         [];
-    final existing = await isar.historys.filter().idIsNotNull().findAll();
-    final toUpdate = <History>[];
-    final toInsert = <History>[];
-    final toDelete = <int>[];
-    for (var history in existing) {
-      final temp = histories.firstWhereOrNull((e) => e.id == history.id);
-      if (temp != null) {
-        final chapter = await isar.chapters.get(temp.chapterId!);
-        if (chapter != null &&
-            (history.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
-          temp.chapter.value = chapter;
-          toUpdate.add(temp);
+    await isar.writeTxn(() async {
+      for (var history
+          in await isar.historys.filter().idIsNotNull().findAll()) {
+        final temp = histories.firstWhereOrNull((e) => e.id == history.id);
+        if (temp != null) {
+          final chapter = await isar.chapters.get(temp.chapterId!);
+          if (chapter != null &&
+              (history.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
+            await isar.historys.put(temp..chapter.value = chapter);
+            await temp.chapter.save();
+          }
+          histories.remove(temp);
+        } else {
+          await isar.historys.delete(history.id!);
         }
-        histories.remove(temp);
-      } else {
-        toDelete.add(history.id!);
       }
-    }
-    for (var history in histories) {
-      final chapter = await isar.chapters.get(history.chapterId!);
-      if (chapter != null) {
-        history.chapter.value = chapter;
-        toInsert.add(history);
+      for (var history in histories) {
+        final chapter = await isar.chapters.get(history.chapterId!);
+        if (chapter != null) {
+          await isar.historys.put(history..chapter.value = chapter);
+          await history.chapter.save();
+        }
       }
-    }
-    if (toDelete.isNotEmpty) await isar.historys.deleteAll(toDelete);
-    if (toUpdate.isNotEmpty) await isar.historys.putAllAndSave(toUpdate);
-    if (toInsert.isNotEmpty) await isar.historys.putAllAndSave(toInsert);
-    await syncNotifier.clearChangedParts([ActionType.removeHistory], false);
+      await syncNotifier.clearChangedParts([ActionType.removeHistory], false);
+    });
   }
 
   Future<void> _upsertUpdates(
@@ -450,60 +434,55 @@ class SyncServer extends _$SyncServer {
             ?.map((e) => Update.fromJson(e))
             .toList() ??
         [];
-    final existing = await isar.updates.filter().idIsNotNull().findAll();
-    final toUpdate = <Update>[];
-    final toInsert = <Update>[];
-    final toDelete = <int>[];
-
-    for (var update in existing) {
-      final temp = updates.firstWhereOrNull((e) => e.id == update.id);
-      if (temp != null) {
+    await isar.writeTxn(() async {
+      for (var update in await isar.updates.filter().idIsNotNull().findAll()) {
+        final temp = updates.firstWhereOrNull((e) => e.id == update.id);
+        if (temp != null) {
+          final chapter = await isar.chapters
+              .filter()
+              .mangaIdEqualTo(temp.mangaId)
+              .nameEqualTo(temp.chapterName)
+              .findFirst();
+          if (chapter != null &&
+              (update.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
+            await isar.updates.put(temp..chapter.value = chapter);
+            await temp.chapter.save();
+          }
+          updates.remove(temp);
+        } else {
+          await isar.updates.delete(update.id!);
+        }
+      }
+      for (var update in updates) {
         final chapter = await isar.chapters
             .filter()
-            .mangaIdEqualTo(temp.mangaId)
-            .nameEqualTo(temp.chapterName)
+            .mangaIdEqualTo(update.mangaId)
+            .nameEqualTo(update.chapterName)
             .findFirst();
-        if (chapter != null &&
-            (update.updatedAt ?? 0) < (temp.updatedAt ?? 1)) {
-          temp.chapter.value = chapter;
-          toUpdate.add(temp);
+        if (chapter != null) {
+          await isar.updates.put(update..chapter.value = chapter);
+          await update.chapter.save();
         }
-        updates.remove(temp);
-      } else {
-        toDelete.add(update.id!);
       }
-    }
-    for (var update in updates) {
-      final chapter = await isar.chapters
-          .filter()
-          .mangaIdEqualTo(update.mangaId)
-          .nameEqualTo(update.chapterName)
-          .findFirst();
-      if (chapter != null) {
-        update.chapter.value = chapter;
-        toInsert.add(update);
-      }
-    }
-    if (toDelete.isNotEmpty) await isar.updates.deleteAll(toDelete);
-    if (toUpdate.isNotEmpty) await isar.updates.putAllAndSave(toUpdate);
-    if (toInsert.isNotEmpty) await isar.updates.putAllAndSave(toInsert);
-    await syncNotifier.clearChangedParts([ActionType.removeUpdate], false);
+      await syncNotifier.clearChangedParts([ActionType.removeUpdate], false);
+    });
   }
 
   Future<void> _upsertSettings(Map<String, dynamic> jsonData) async {
     final oldSettings = isar.settings.getSync(227)!;
-    final settings = Settings.fromJson(jsonData["settings"])
-      ..cookiesList = oldSettings.cookiesList;
-    await isar.settings.putAndSave(settings);
-    ref.invalidate(followSystemThemeStateProvider);
-    ref.invalidate(themeModeStateProvider);
-    ref.invalidate(blendLevelStateProvider);
-    ref.invalidate(flexSchemeColorStateProvider);
-    ref.invalidate(pureBlackDarkModeStateProvider);
-    ref.invalidate(l10nLocaleStateProvider);
-    ref.invalidate(extensionsRepoStateProvider(ItemType.manga));
-    ref.invalidate(extensionsRepoStateProvider(ItemType.anime));
-    ref.invalidate(extensionsRepoStateProvider(ItemType.novel));
+    final settings = Settings.fromJson(jsonData["settings"]);
+    await isar.writeTxn(() async {
+      await isar.settings.put(settings..cookiesList = oldSettings.cookiesList);
+      ref.invalidate(followSystemThemeStateProvider);
+      ref.invalidate(themeModeStateProvider);
+      ref.invalidate(blendLevelStateProvider);
+      ref.invalidate(flexSchemeColorStateProvider);
+      ref.invalidate(pureBlackDarkModeStateProvider);
+      ref.invalidate(l10nLocaleStateProvider);
+      ref.invalidate(extensionsRepoStateProvider(ItemType.manga));
+      ref.invalidate(extensionsRepoStateProvider(ItemType.anime));
+      ref.invalidate(extensionsRepoStateProvider(ItemType.novel));
+    });
   }
 
   String _getMangaData({bool upload = false, bool download = false}) {

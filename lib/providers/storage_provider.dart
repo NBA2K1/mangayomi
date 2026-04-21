@@ -9,7 +9,6 @@ import 'package:mangayomi/models/changed.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/custom_button.dart';
 import 'package:mangayomi/models/download.dart';
-import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/update.dart';
 import 'package:mangayomi/models/history.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -257,7 +256,7 @@ class StorageProvider {
     try {
       final settings = await isar.settings.filter().idEqualTo(227).findFirst();
       if (settings == null) {
-        await isar.settings.putAndSave(Settings());
+        await isar.writeTxn(() async => isar.settings.put(Settings()));
       }
     } catch (_) {
       if (await requestPermission()) {
@@ -267,7 +266,7 @@ class StorageProvider {
               .idEqualTo(227)
               .findFirst();
           if (settings == null) {
-            await isar.settings.putAndSave(Settings());
+            await isar.writeTxn(() async => isar.settings.put(Settings()));
           }
         } catch (e) {
           debugPrint("Failed after retry with permission: $e");
@@ -281,25 +280,27 @@ class StorageProvider {
         .filter()
         .syncIdIsNotNull()
         .findAll();
-    for (final pref in prefs) {
-      pref.refreshing = true;
-    }
-    await isar.trackPreferences.putAllAndSave(prefs);
+    await isar.writeTxn(() async {
+      for (final pref in prefs) {
+        await isar.trackPreferences.put(pref..refreshing = true);
+      }
+    });
 
     final customButton = await isar.customButtons
         .filter()
         .idIsNotNull()
         .findFirst();
     if (customButton == null) {
-      await isar.customButtons.putAndSave(
-        CustomButton(
-          title: "+85 s",
-          codePress:
-              """local intro_length = mp.get_property_native("user-data/current-anime/intro-length")
+      await isar.writeTxn(() async {
+        await isar.customButtons.put(
+          CustomButton(
+            title: "+85 s",
+            codePress:
+                """local intro_length = mp.get_property_native("user-data/current-anime/intro-length")
 aniyomi.right_seek_by(intro_length)""",
-          codeLongPress:
-              """aniyomi.int_picker("Change intro length", "%ds", 0, 255, 1, "user-data/current-anime/intro-length")""",
-          codeStartup: """function update_button(_, length)
+            codeLongPress:
+                """aniyomi.int_picker("Change intro length", "%ds", 0, 255, 1, "user-data/current-anime/intro-length")""",
+            codeStartup: """function update_button(_, length)
   if length ~= nil then
     if length == 0 then
 	  aniyomi.hide_button()
@@ -314,11 +315,12 @@ end
 if \$isPrimary then
   mp.observe_property("user-data/current-anime/intro-length", "number", update_button)
 end""",
-          isFavourite: true,
-          pos: 0,
-          updatedAt: DateTime.now().millisecondsSinceEpoch,
-        ),
-      );
+            isFavourite: true,
+            pos: 0,
+            updatedAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      });
     }
 
     return isar;

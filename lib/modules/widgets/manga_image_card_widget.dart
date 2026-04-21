@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/main.dart';
-import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
@@ -315,9 +314,11 @@ Future<void> pushToMangaReaderDetail({
           .sourceEqualTo(manga.source)
           .isEmpty();
       if (empty) {
-        await isar.mangas.putAndSave(
-          manga..updatedAt = DateTime.now().millisecondsSinceEpoch,
-        );
+        await isar.writeTxn(() async {
+          await isar.mangas.put(
+            manga..updatedAt = DateTime.now().millisecondsSinceEpoch,
+          );
+        });
       }
 
       final foundMangas = await isar.mangas
@@ -347,7 +348,9 @@ Future<void> pushToMangaReaderDetail({
 
   final mang = await isar.mangas.get(mangaId);
   if (mang!.sourceId == null && !(mang.isLocalArchive ?? false)) {
-    await isar.mangas.putAndSave(mang..sourceId = sourceId);
+    await isar.writeTxn(() async {
+      await isar.mangas.put(mang..sourceId = sourceId);
+    });
   }
   final settings = await isar.settings.get(227);
   final exists =
@@ -373,7 +376,7 @@ Future<void> pushToMangaReaderDetail({
         ]
         ..updatedAt = DateTime.now().millisecondsSinceEpoch;
 
-      await isar.settings.putAndSave(settings);
+      await isar.settings.put(settings);
     });
   }
   if (!addToFavourite) {
@@ -389,10 +392,12 @@ Future<void> pushToMangaReaderDetail({
     }
   } else {
     final getManga = await isar.mangas.get(mangaId);
-    await isar.mangas.putAndSave(
-      getManga!
-        ..favorite = !getManga.favorite!
-        ..updatedAt = DateTime.now().millisecondsSinceEpoch,
-    );
+    await isar.writeTxn(() async {
+      await isar.mangas.put(
+        getManga!
+          ..favorite = !getManga.favorite!
+          ..updatedAt = DateTime.now().millisecondsSinceEpoch,
+      );
+    });
   }
 }

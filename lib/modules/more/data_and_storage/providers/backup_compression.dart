@@ -1,6 +1,5 @@
 import 'package:archive/archive.dart';
 import 'package:mangayomi/main.dart';
-import 'package:mangayomi/models/isar_collection_helper.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -23,6 +22,8 @@ class BackupCompressionLevel extends _$BackupCompressionLevel {
 
     settings.backupCompressionLevel = value;
 
-    await isar.settings.putAndSave(settings);
+    await isar.writeTxn(() async {
+      await isar.settings.put(settings);
+    });
   }
 }
