@@ -1,12 +1,11 @@
 import 'package:isar_community/isar.dart';
-import 'package:mangayomi/models/isar_link_saver.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/utils/constant.dart';
 part 'settings.g.dart';
 
 @collection
 @Name("Settings")
-class Settings with IsarLinkSaver {
+class Settings {
   Id? id;
 
   int? updatedAt;
@@ -999,11 +998,6 @@ class Settings with IsarLinkSaver {
     'ttsLanguage': ttsLanguage,
     'ttsVoice': ttsVoice,
   };
-
-  @override
-  Future<void> saveLinks() async {
-    await sources.save();
-  }
 }
 
 enum DebandingType { none, cpu, gpu }

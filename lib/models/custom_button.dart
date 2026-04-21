@@ -1,10 +1,9 @@
 import 'package:isar_community/isar.dart';
-import 'package:mangayomi/models/isar_link_saver.dart';
 part 'custom_button.g.dart';
 
 @collection
 @Name("CustomButton")
-class CustomButton with IsarLinkSaver {
+class CustomButton {
   Id? id;
 
   String? title;
@@ -77,11 +76,6 @@ class CustomButton with IsarLinkSaver {
     'pos': pos,
     'updatedAt': updatedAt ?? 0,
   };
-
-  @override
-  Future<void> saveLinks() async {
-    // No IsarLinks to save. Only for compatibility.
-  }
 }
 
 class ActiveCustomButton {

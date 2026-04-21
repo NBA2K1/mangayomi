@@ -1,12 +1,11 @@
 import 'dart:math';
 
 import 'package:isar_community/isar.dart';
-import 'package:mangayomi/models/isar_link_saver.dart';
 part 'source_preference.g.dart';
 
 @collection
 @Name("SourcePreferences")
-class SourcePreference with IsarLinkSaver {
+class SourcePreference {
   Id? id;
   int? sourceId;
   String? key;
@@ -65,11 +64,6 @@ class SourcePreference with IsarLinkSaver {
           ? EditTextPreference.fromJson(json['editTextPreference'])
           : null,
     );
-  }
-
-  @override
-  Future<void> saveLinks() async {
-    // No IsarLinks to save. Only for compatibility.
   }
 }
 
@@ -232,7 +226,7 @@ class EditTextPreference {
 
 @collection
 @Name("SourcePreferenceStringValue")
-class SourcePreferenceStringValue with IsarLinkSaver {
+class SourcePreferenceStringValue {
   Id id;
   int? sourceId;
   String? key;
@@ -244,9 +238,4 @@ class SourcePreferenceStringValue with IsarLinkSaver {
     this.key,
     this.value,
   });
-
-  @override
-  Future<void> saveLinks() async {
-    // No IsarLinks to save. Only for compatibility.
-  }
 }

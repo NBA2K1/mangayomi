@@ -1,11 +1,10 @@
 import 'package:isar_community/isar.dart';
 import 'package:mangayomi/models/chapter.dart';
-import 'package:mangayomi/models/isar_link_saver.dart';
 part 'manga.g.dart';
 
 @collection
 @Name("Manga")
-class Manga with IsarLinkSaver {
+class Manga {
   Id? id;
 
   String? name;
@@ -139,11 +138,6 @@ class Manga with IsarLinkSaver {
     'updatedAt': updatedAt ?? 0,
     'sourceId': sourceId,
   };
-
-  @override
-  Future<void> saveLinks() async {
-    await chapters.save();
-  }
 }
 
 enum Status {
