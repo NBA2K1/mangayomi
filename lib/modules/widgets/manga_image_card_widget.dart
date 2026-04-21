@@ -335,9 +335,11 @@ Future<void> pushToMangaReaderDetail({
         }
       }
       if (matchedManga == null) {
-        await isar.mangas.putAndSave(
-          manga..updatedAt = DateTime.now().millisecondsSinceEpoch,
-        );
+        await isar.writeTxn(() async {
+          await isar.mangas.put(
+            manga..updatedAt = DateTime.now().millisecondsSinceEpoch,
+          );
+        });
         matchedManga = manga;
       }
       mangaId = matchedManga.id!;
