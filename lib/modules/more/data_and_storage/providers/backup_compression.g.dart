@@ -42,7 +42,7 @@ final class BackupCompressionLevelProvider
 }
 
 String _$backupCompressionLevelHash() =>
-    r'46ac8540f51c50d3d426a6b78dc582b71bcd9bd9';
+    r'311d8f25c01375dc9dceef0ac9ca980c0a5cdb07';
 
 abstract class _$BackupCompressionLevel extends $Notifier<int> {
   int build();
