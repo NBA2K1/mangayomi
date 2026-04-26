@@ -1066,7 +1066,7 @@ class SortChapter {
   int? mangaId;
   bool? reverse;
   int? index;
-  SortChapter({this.mangaId, this.reverse = true, this.index = 1});
+  SortChapter({this.mangaId, this.reverse = false, this.index = 1});
   SortChapter.fromJson(Map<String, dynamic> json) {
     index = json['index'];
     mangaId = json['mangaId'];

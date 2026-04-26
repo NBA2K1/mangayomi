@@ -83,7 +83,7 @@ extension MangaExtensions on Manga {
         settings.sortChapterList!.where((e) => e.mangaId == id).firstOrNull ??
         SortChapter(mangaId: id, index: 1);
     final sortIndex = sortChapterEntry.index!;
-    final reverse = sortChapterEntry.reverse!;
+    final reverse = !sortChapterEntry.reverse!;
 
     // Start from the reading list so filter logic lives in one place.
     List<Chapter> list = getChapterListForReading();
