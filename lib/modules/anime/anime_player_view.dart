@@ -819,7 +819,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       configuration: VideoControllerConfiguration(
         hwdec: hwdecMode,
         enableHardwareAcceleration: enableHardwareAccel,
-        vo: Platform.isAndroid
+        vo: isAndroid
             ? useGpuNext
                   ? "gpu-next"
                   : "gpu"
@@ -904,7 +904,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
   }
 
   Future<void> _loadAndroidFont() async {
-    if (Platform.isAndroid && useLibass) {
+    if (isAndroid && useLibass) {
       try {
         final subDir = await getApplicationDocumentsDirectory();
         final fontPath = path.join(subDir.path, 'subfont.ttf');

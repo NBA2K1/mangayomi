@@ -16,6 +16,7 @@ import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/utils/log/logger.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -133,7 +134,7 @@ class AboutScreen extends ConsumerWidget {
                               path.join(directory!.path, 'logs.txt'),
                             );
                             if (await file.exists()) {
-                              if (Platform.isLinux) {
+                              if (isLinux) {
                                 await Clipboard.setData(
                                   ClipboardData(text: file.path),
                                 );

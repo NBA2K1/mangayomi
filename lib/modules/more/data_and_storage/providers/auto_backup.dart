@@ -3,6 +3,7 @@ import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:path/path.dart' as p;
 part 'auto_backup.g.dart';
@@ -65,14 +66,12 @@ class AutoBackupLocationState extends _$AutoBackupLocationState {
   Directory? _storageProvider;
 
   Future _refresh() async {
-    _storageProvider = Platform.isIOS
+    _storageProvider = isIOS
         ? await StorageProvider().getIosBackupDirectory()
         : await StorageProvider().getDefaultDirectory();
     final settings = isar.settings.getSync(227);
     state = (
-      Platform.isIOS
-          ? _storageProvider!.path
-          : p.join(_storageProvider!.path, "backup"),
+      isIOS ? _storageProvider!.path : p.join(_storageProvider!.path, "backup"),
       settings!.autoBackupLocation ?? "",
     );
   }
@@ -93,7 +92,7 @@ Future<void> checkAndBackup(Ref ref) async {
   final storageProvider = StorageProvider();
   final backupLocation = ref.read(autoBackupLocationStateProvider).$2;
   Directory? backupDirectory;
-  if (Platform.isIOS) {
+  if (isIOS) {
     backupDirectory = await (storageProvider.getIosBackupDirectory());
   } else {
     final defaultDirectory = await storageProvider.getDefaultDirectory();

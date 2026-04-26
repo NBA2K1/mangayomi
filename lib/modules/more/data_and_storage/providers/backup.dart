@@ -19,6 +19,7 @@ import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/models/update.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/backup_compression.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path/path.dart' as p;
@@ -173,7 +174,7 @@ Future<void> doBackUp(
           "Backup created!",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        trailing: Platform.isLinux
+        trailing: isLinux
             ? null
             : // Don't show share button on Linux, as there is no share-feature
               (_) => UnconstrainedBox(

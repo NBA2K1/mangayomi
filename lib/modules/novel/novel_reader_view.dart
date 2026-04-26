@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/rendering.dart';
@@ -76,7 +75,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   double offset = 0;
   double maxOffset = 0;
   int fontSize = 14;
-  bool get _ttsSupported => !Platform.isLinux;
+  bool get _ttsSupported => !isLinux;
 
   final Stopwatch _readingStopwatch = Stopwatch();
 
@@ -921,7 +920,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
               final url = chapter.url!.startsWith('/')
                   ? '${source.baseUrl}/${chapter.url!}'
                   : chapter.url!;
-              if (Platform.isLinux) {
+              if (isLinux) {
                 final uri = Uri.parse(url);
                 await launchUrl(
                   uri,
@@ -944,7 +943,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   }
 
   Widget _bottomBar(BackgroundColor backgroundColor) {
-    if (!_isView && Platform.isIOS) {
+    if (!_isView && isIOS) {
       return const SizedBox.shrink();
     }
     bool hasPrevChapter = _readerController.hasPreviousChapter;

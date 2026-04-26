@@ -10,6 +10,7 @@ import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -88,7 +89,7 @@ class _DownloadFileScreenState extends ConsumerState<DownloadFileScreen> {
                 ElevatedButton(
                   onPressed: _total == 0
                       ? () async {
-                          if (Platform.isAndroid) {
+                          if (isAndroid) {
                             final deviceInfo = DeviceInfoPlugin();
                             final androidInfo = await deviceInfo.androidInfo;
                             String apkUrl = "";

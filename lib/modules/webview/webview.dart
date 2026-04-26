@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +34,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
     super.didChangeDependencies();
     if (_initialized) return;
     _initialized = true;
-    if (Platform.isLinux || Platform.isWindows) {
+    if (isNonMacDesktop) {
       _runWebViewDesktop();
     } else {
       setState(() {
@@ -45,7 +45,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
 
   @override
   void dispose() {
-    if (Platform.isLinux) {
+    if (isLinux) {
       _desktopWebview?.close();
     } else {
       if (browser != null) {
@@ -62,7 +62,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
     if (ua == defaultUserAgent) {
       ua = null;
     }
-    if (Platform.isLinux) {
+    if (isLinux) {
       _desktopWebview = await WebviewWindow.create();
 
       final timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
@@ -134,7 +134,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context);
-    return (!isNotWebviewWindow && Platform.isLinux)
+    return (!isNotWebviewWindow && isLinux)
         ? Scaffold(
             appBar: AppBar(
               title: Text(
@@ -191,7 +191,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                               ),
                               leading: IconButton(
                                 onPressed: () {
-                                  if (Platform.isWindows) {
+                                  if (isWindows) {
                                     if (browser!.isOpened()) {
                                       browser!.close();
                                       browser!.dispose();
@@ -277,7 +277,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                     _progress < 1.0
                         ? LinearProgressIndicator(value: _progress)
                         : Container(),
-                    if (!Platform.isWindows)
+                    if (!isWindows)
                       Expanded(
                         child: InAppWebView(
                           webViewEnvironment: webViewEnvironment,

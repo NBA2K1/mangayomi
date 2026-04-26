@@ -16,6 +16,7 @@ import 'package:mangayomi/utils/log/log.dart';
 import 'package:mangayomi/services/http/rhttp/rhttp.dart' as rhttp;
 import 'package:mangayomi/services/http/doh/doh_resolver.dart';
 import 'package:mangayomi/services/http/doh/doh_providers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 class MClient {
   MClient();
@@ -120,7 +121,7 @@ class MClient {
           .split(RegExp('(?<=)(,)(?=[^;]+?=)'))
           .where((cookie) => cookie.isNotEmpty)
           .toList();
-    } else if (!Platform.isLinux) {
+    } else if (!isLinux) {
       cookies =
           (await flutter_inappwebview.CookieManager.instance(
                 webViewEnvironment: webViewEnvironment,
@@ -280,7 +281,7 @@ class ResolveCloudFlareChallenge extends RetryPolicy {
   int get maxRetryAttempts => 2;
   @override
   Future<bool> shouldAttemptRetryOnResponse(BaseResponse response) async {
-    if (!showCloudFlareError || Platform.isLinux) return false;
+    if (!showCloudFlareError || isLinux) return false;
     bool isCloudFlare = isCloudflare(response);
     if (isCloudFlare) {
       try {

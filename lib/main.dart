@@ -61,7 +61,7 @@ void main(List<String> args) async {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
-      if (Platform.isLinux && runWebViewTitleBarWidget(args)) return;
+      if (isLinux && runWebViewTitleBarWidget(args)) return;
 
       // Widget-layer errors (build / layout / paint)
       FlutterError.onError = (FlutterErrorDetails details) {
@@ -89,7 +89,7 @@ void main(List<String> args) async {
         await windowManager.ensureInitialized();
         await WindowGeometry.restore();
       }
-      if (Platform.isWindows) {
+      if (isWindows) {
         registerProtocolHandler("mangayomi");
       }
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
@@ -122,7 +122,7 @@ Future<void> _postLaunchInit(StorageProvider storage) async {
   await AppLogger.init();
   unawaited(MDownloader.initializeIsolatePool(poolSize: 6));
   final hivePath = isApple ? "databases" : p.join("Mangayomi", "databases");
-  await Hive.initFlutter(Platform.isAndroid ? "" : hivePath);
+  await Hive.initFlutter(isAndroid ? "" : hivePath);
   Hive.registerAdapter(TrackSearchAdapter());
   if (isDesktop && !kDebugMode) {
     discordRpc = DiscordRPC(applicationId: "1395040506677039157");
@@ -174,7 +174,7 @@ class _MyAppState extends ConsumerState<MyApp>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
-      if (Platform.isLinux) {
+      if (isLinux) {
         return;
       }
       // Lock the app when going to background (if lock is enabled)
@@ -212,7 +212,7 @@ class _MyAppState extends ConsumerState<MyApp>
           child = appChild;
         }
 
-        if (!Platform.isLinux) {
+        if (!isLinux) {
           final isUnlocked = ref.watch(appUnlockedStateProvider);
           final lockEnabled = ref.watch(appLockEnabledStateProvider);
           if (lockEnabled && !isUnlocked) {
@@ -258,7 +258,7 @@ class _MyAppState extends ConsumerState<MyApp>
   void onWindowClose() {
     WindowGeometry.save();
     // Workaround for libepoxy error when closing app; caused by media-kit
-    if (Platform.isLinux) exit(0);
+    if (isLinux) exit(0);
   }
 
   Future<void> _initDeepLinks() async {

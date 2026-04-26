@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'dart:math' as math;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:html/parser.dart' as html_parser;
@@ -25,7 +25,7 @@ class NovelTtsService {
   NovelTtsService._();
   static final NovelTtsService instance = NovelTtsService._();
   static const _manualInterruptionWindow = Duration(milliseconds: 500);
-  bool get _isSupported => !Platform.isLinux;
+  bool get _isSupported => !isLinux;
 
   FlutterTts? _flutterTts;
   final _stateController = StreamController<TtsState>.broadcast();

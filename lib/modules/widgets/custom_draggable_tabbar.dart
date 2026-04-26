@@ -1,6 +1,5 @@
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'dart:math';
-
 import 'package:draggable_menu/draggable_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,7 +123,7 @@ Future<void> customDraggableTabBar({
                   }
                 : 0;
             return Scaffold(
-              backgroundColor: Platform.isLinux ? null : Colors.transparent,
+              backgroundColor: isLinux ? null : Colors.transparent,
               body: Container(
                 width: context.width(1) - width,
                 decoration: BoxDecoration(

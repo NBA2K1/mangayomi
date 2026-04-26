@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as path;
 
 const extensionServerFallbackVersion = '1.0.0';
@@ -25,7 +26,7 @@ String? extensionServerDirectoryFromPaths({
 }
 
 Future<String?> findExtensionServerJavaExecutable(Directory root) async {
-  final executableName = Platform.isWindows ? 'java.exe' : 'java';
+  final executableName = isWindows ? 'java.exe' : 'java';
   final preferredPath = path.join(
     root.path,
     'jre',
@@ -59,16 +60,16 @@ Future<String?> findExtensionServerJar(Directory root) async {
 
 String? extensionServerAssetNameForCurrentPlatform() {
   final abi = Abi.current();
-  if (Platform.isIOS) {
+  if (isIOS) {
     return abi == Abi.iosArm64 ? 'macOS-arm64-bundle.zip' : null;
   }
-  if (Platform.isWindows) {
+  if (isWindows) {
     return abi == Abi.windowsX64 ? 'windows-x64-bundle.zip' : null;
   }
-  if (Platform.isLinux) {
+  if (isLinux) {
     return abi == Abi.linuxX64 ? 'linux-x64-bundle.zip' : null;
   }
-  if (Platform.isMacOS) {
+  if (isMacOS) {
     return switch (abi) {
       Abi.macosArm64 => 'macOS-arm64-bundle.zip',
       Abi.macosX64 => 'macOS-x64-bundle.zip',

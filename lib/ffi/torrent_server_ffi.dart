@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'generated_bindings.dart';
 
@@ -20,13 +21,13 @@ Future<int> start(String mcfg) async {
 const String _libName = 'libmtorrentserver';
 
 final DynamicLibrary _dylib = () {
-  if (Platform.isMacOS) {
+  if (isMacOS) {
     return DynamicLibrary.open('$_libName.dylib');
   }
-  if (Platform.isLinux) {
+  if (isLinux) {
     return DynamicLibrary.open('$_libName.so');
   }
-  if (Platform.isWindows) {
+  if (isWindows) {
     return DynamicLibrary.open('$_libName.dll');
   }
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');

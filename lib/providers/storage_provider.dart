@@ -18,6 +18,7 @@ import 'package:mangayomi/models/sync_preference.dart';
 import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
@@ -28,7 +29,7 @@ class StorageProvider {
   factory StorageProvider() => _instance;
 
   Future<bool> requestPermission() async {
-    if (!Platform.isAndroid) return true;
+    if (!isAndroid) return true;
     Permission permission = Permission.manageExternalStorage;
     if (await permission.isGranted) return true;
     if (await permission.request().isGranted) {
@@ -49,14 +50,14 @@ class StorageProvider {
 
   Future<Directory?> getDefaultDirectory() async {
     Directory? directory;
-    if (Platform.isAndroid) {
+    if (isAndroid) {
       directory = Directory("/storage/emulated/0/Mangayomi/");
     } else {
       final dir = await getApplicationDocumentsDirectory();
       // The documents dir in iOS is already named "Mangayomi".
       // Appending "Mangayomi" to the documents dir would create
       // unnecessarily nested Mangayomi/Mangayomi/ folder.
-      if (Platform.isIOS) return dir;
+      if (isIOS) return dir;
       directory = Directory(path.join(dir.path, 'Mangayomi'));
     }
     return directory;
@@ -128,7 +129,7 @@ class StorageProvider {
     } catch (e) {
       debugPrint("Could not get downloadLocation from Isar settings: $e");
     }
-    if (Platform.isAndroid) {
+    if (isAndroid) {
       directory = Directory(
         dPath.isEmpty ? "/storage/emulated/0/Mangayomi/" : "$dPath/",
       );
@@ -138,7 +139,7 @@ class StorageProvider {
       // The documents dir in iOS is already named "Mangayomi".
       // Appending "Mangayomi" to the documents dir would create
       // unnecessarily nested Mangayomi/Mangayomi/ folder.
-      if (Platform.isIOS) return Directory(p);
+      if (isIOS) return Directory(p);
       directory = Directory(path.join(p, 'Mangayomi'));
     }
     return directory;
@@ -183,8 +184,8 @@ class StorageProvider {
   Future<Directory?> getDatabaseDirectory() async {
     final dir = await getApplicationDocumentsDirectory();
     String dbDir;
-    if (Platform.isAndroid) return dir;
-    if (Platform.isIOS) {
+    if (isAndroid) return dir;
+    if (isIOS) {
       // Put the database files inside /databases like on Windows, Linux
       // So they are not just in the app folders root dir
       dbDir = path.join(dir.path, 'databases');
@@ -197,7 +198,7 @@ class StorageProvider {
 
   Future<Directory?> getGalleryDirectory() async {
     String gPath;
-    if (Platform.isAndroid) {
+    if (isAndroid) {
       gPath = "/storage/emulated/0/Pictures/Mangayomi/";
     } else {
       gPath = path.join((await getDirectory())!.path, 'Pictures');

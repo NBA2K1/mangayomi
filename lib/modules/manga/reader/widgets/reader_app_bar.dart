@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -69,7 +67,7 @@ class ReaderAppBar extends ConsumerWidget {
     final isLocalArchive = chapter.manga.value?.isLocalArchive ?? false;
 
     double height = isVisible
-        ? Platform.isIOS
+        ? isIOS
               ? 120.0
               : !fullScreenReader && !isDesktop
               ? 55.0

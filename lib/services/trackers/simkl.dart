@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http_interceptor/http_interceptor.dart';
@@ -19,8 +19,7 @@ class Simkl extends _$Simkl implements BaseTracker {
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
   static const _baseOAuthUrl = 'https://simkl.com/oauth';
   static const _baseApiUrl = 'https://api.simkl.com';
-  static final _isDesktop = (Platform.isWindows || Platform.isLinux);
-  static final _redirectUri = _isDesktop
+  static final _redirectUri = isNonMacDesktop
       ? 'http://localhost:43824'
       : 'mangayomi://';
   static const _clientId =
@@ -40,7 +39,7 @@ class Simkl extends _$Simkl implements BaseTracker {
   }) {}
 
   Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
+    final callbackUrlScheme = isNonMacDesktop
         ? 'http://localhost:43824'
         : 'mangayomi';
     final loginUrl = _authUrl();

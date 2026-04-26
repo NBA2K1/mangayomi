@@ -55,7 +55,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     });
   }
 
-  bool get _requiresJre => !Platform.isIOS;
+  bool get _requiresJre => !isIOS;
 
   bool get _showExtensionServerSection => !isMobile;
 
@@ -172,7 +172,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
                           : _useExistingLocation,
                       icon: const Icon(Icons.link_outlined),
                       label: Text(
-                        Platform.isIOS
+                        isIOS
                             ? l10n.import_existing_jar
                             : l10n.detect_files_in_selected_folder,
                       ),
@@ -195,7 +195,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
               ],
               const SizedBox(height: 24),
               ExtensionServerStatusTile(
-                label: Platform.isIOS
+                label: isIOS
                     ? l10n.app_install_location
                     : l10n.install_location,
                 value: _selectedInstallDirectory,
@@ -426,7 +426,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
 
   Future<void> _useExistingLocation() async {
     final l10n = l10nLocalizations(context)!;
-    if (Platform.isIOS) {
+    if (isIOS) {
       await _importExistingIosJar();
       return;
     }
@@ -514,7 +514,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   }
 
   Future<Directory> _resolveInstallDirectory() async {
-    if (Platform.isIOS) {
+    if (isIOS) {
       return _defaultInstallDirectory();
     }
     if (_selectedInstallDirectory.isNotEmpty) {
@@ -638,7 +638,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
   Future<String> _resolveSelectedInstallDirectory(
     _ConfiguredPaths paths,
   ) async {
-    if (Platform.isIOS) {
+    if (isIOS) {
       return (await _defaultInstallDirectory()).path;
     }
     return extensionServerDirectoryFromPaths(
@@ -769,7 +769,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
     _ResolvedPaths paths,
     String installDirectory,
   ) async {
-    if (_requiresJre && !Platform.isWindows) {
+    if (_requiresJre && !isWindows) {
       await Process.run('chmod', ['+x', paths.jrePath!]);
     }
     await _saveResolvedPaths(
@@ -796,7 +796,7 @@ class _ExtensionServerScreenState extends ConsumerState<ExtensionServerScreen> {
         await directory.delete(recursive: true);
         break;
       } catch (e) {
-        if (!Platform.isWindows || attempt == retryCount - 1) {
+        if (!isWindows || attempt == retryCount - 1) {
           rethrow;
         }
         await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));

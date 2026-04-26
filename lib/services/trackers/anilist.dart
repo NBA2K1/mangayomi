@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/main.dart';
@@ -17,13 +17,12 @@ part 'anilist.g.dart';
 @riverpod
 class Anilist extends _$Anilist implements BaseTracker {
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
-  static final _isDesktop = Platform.isWindows || Platform.isLinux;
-  final String _clientId = _isDesktop ? '13587' : '13588';
+  final String _clientId = isNonMacDesktop ? '13587' : '13588';
   static const String _baseApiUrl = "https://graphql.anilist.co/";
-  final String _redirectUri = _isDesktop
+  final String _redirectUri = isNonMacDesktop
       ? 'http://localhost:43824/success?code=1337'
       : 'mangayomi://success?code=1337';
-  final String _clientSecret = _isDesktop
+  final String _clientSecret = isNonMacDesktop
       ? 'tJA13cAR2tCCXrJCwwvmwEDbWRoIaahFiJTXToHd'
       : 'G2fFUiGtgFd60D0lCkhgGKvMmrCfDmZXADQIzWXr';
 
@@ -35,7 +34,7 @@ class Anilist extends _$Anilist implements BaseTracker {
   }) {}
 
   Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
+    final callbackUrlScheme = isNonMacDesktop
         ? 'http://localhost:43824'
         : 'mangayomi';
     final loginUrl =

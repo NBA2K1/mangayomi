@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'player_decoder_state_provider.g.dart';
@@ -31,7 +32,7 @@ class HwdecModeState extends _$HwdecModeState {
     final hwdecSupport = hwdecs[hwdecMode] ?? [];
     if (!hwdecSupport.contains("all") &&
         !hwdecSupport.contains(Platform.operatingSystem)) {
-      return Platform.isAndroid ? "auto-safe" : "auto";
+      return isAndroid ? "auto-safe" : "auto";
     }
     return hwdecMode;
   }
@@ -53,8 +54,7 @@ class HwdecModeState extends _$HwdecModeState {
 class EnableHardwareAccelState extends _$EnableHardwareAccelState {
   @override
   bool build() {
-    return isar.settings.getSync(227)!.enableHardwareAcceleration ??
-            Platform.isMacOS
+    return isar.settings.getSync(227)!.enableHardwareAcceleration ?? isMacOS
         ? false
         : true;
   }

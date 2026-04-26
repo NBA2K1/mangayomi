@@ -5,6 +5,7 @@ import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangayomi/src/rust/api/epub.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:http_interceptor/http/intercepted_client.dart';
 import 'package:js_packer/js_packer.dart';
@@ -216,7 +217,7 @@ async function parseEpubChapter(bookName, url, headers, chapterTitle) {
         : null;
 
     final tmpDirectory = (await StorageProvider().getTmpDirectory())!;
-    if (Platform.isAndroid) {
+    if (isAndroid) {
       if (!(await File(p.join(tmpDirectory.path, ".nomedia")).exists())) {
         await File(p.join(tmpDirectory.path, ".nomedia")).create();
       }

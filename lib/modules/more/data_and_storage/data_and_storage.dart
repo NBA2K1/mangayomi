@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -357,7 +357,7 @@ class DataAndStorage extends ConsumerWidget {
                 ],
               ),
             ),
-            if (!Platform.isIOS)
+            if (!isIOS)
               ListTile(
                 onTap: () async {
                   String? result = await FilePicker.getDirectoryPath();

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'dart:math';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http_interceptor/http_interceptor.dart';
@@ -23,10 +23,9 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
   static const _baseOAuthUrl = 'https://myanimelist.net/v1/oauth2';
   static const _baseApiUrl = 'https://api.myanimelist.net/v2';
   String codeVerifier = "";
-  static final _isDesktop = (Platform.isWindows || Platform.isLinux);
   static const _desktopClientId = '39e9be346b4e7dbcc59a98357e2f8472';
   static const _mobileClientId = '0c9100ccd443ddb441a319a881180f7f';
-  final _clientId = _isDesktop ? _desktopClientId : _mobileClientId;
+  final _clientId = isNonMacDesktop ? _desktopClientId : _mobileClientId;
 
   String getFallbackClientId(String usedId) {
     return usedId == _desktopClientId ? _mobileClientId : _desktopClientId;
@@ -40,7 +39,7 @@ class MyAnimeList extends _$MyAnimeList implements BaseTracker {
   }) {}
 
   Future<bool?> login() async {
-    final callbackUrlScheme = _isDesktop
+    final callbackUrlScheme = isNonMacDesktop
         ? 'http://localhost:43824'
         : 'mangayomi';
     final loginUrl = _authUrl();

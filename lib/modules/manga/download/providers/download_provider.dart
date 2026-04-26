@@ -29,6 +29,7 @@ import 'package:mangayomi/utils/chapter_recognition.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:mangayomi/utils/headers.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/reg_exp_matcher.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:path/path.dart' as p;
@@ -294,7 +295,7 @@ Future<void> downloadChapter(
         final mainDirectory = (await storageProvider.getDirectory())!;
         storageProvider.createDirectorySafely(mainDirectory.path);
         for (var index = 0; index < pageUrls.length; index++) {
-          if (Platform.isAndroid) {
+          if (isAndroid) {
             if (!(await File(
               p.join(mainDirectory.path, ".nomedia"),
             ).exists())) {

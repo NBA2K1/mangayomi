@@ -1,11 +1,23 @@
 import 'dart:io';
 
 /// macOS, Linux or Windows
-final bool isDesktop =
-    Platform.isMacOS || Platform.isLinux || Platform.isWindows;
+final bool isDesktop = isMacOS || isNonMacDesktop;
 
 /// Android or iOS
-final bool isMobile = Platform.isAndroid || Platform.isIOS;
+final bool isMobile = isAndroid || isIOS;
 
 /// macOS or iOS
-final bool isApple = Platform.isMacOS || Platform.isIOS;
+final bool isApple = isMacOS || isIOS;
+
+/// Windows or Linux
+final bool isNonMacDesktop = isLinux || isWindows;
+
+final bool isIOS = Platform.isIOS;
+
+final bool isMacOS = Platform.isMacOS;
+
+final bool isLinux = Platform.isLinux;
+
+final bool isWindows = Platform.isWindows;
+
+final bool isAndroid = Platform.isAndroid;
