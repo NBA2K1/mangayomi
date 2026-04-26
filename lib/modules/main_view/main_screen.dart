@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -555,7 +555,7 @@ class _DownloadedOnlyBar extends StatelessWidget {
     return Material(
       child: AnimatedContainer(
         height: downloadedOnly
-            ? Platform.isAndroid || Platform.isIOS
+            ? isMobile
                   ? MediaQuery.of(context).padding.top * 2
                   : 50
             : 0,
@@ -594,7 +594,7 @@ class _IncognitoModeBar extends StatelessWidget {
     return Material(
       child: AnimatedContainer(
         height: incognitoMode
-            ? Platform.isAndroid || Platform.isIOS
+            ? isMobile
                   ? MediaQuery.of(context).padding.top * 2
                   : 50
             : 0,
