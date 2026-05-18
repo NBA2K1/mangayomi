@@ -18,8 +18,10 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: checkout branch
+      - name: checkout source for tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -88,8 +90,10 @@ jobs:
       contents: write
     runs-on: macos-15
     steps:
-      - name: Checkout repository
+      - name: checkout source for tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -159,8 +163,10 @@ jobs:
       contents: write
     runs-on: macos-latest
     steps:
-      - name: checkout branch
+      - name: checkout source for tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -202,8 +208,10 @@ jobs:
       contents: write
     runs-on: windows-latest
     steps:
-      - name: checkout branch
+      - name: checkout source for tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: setup flutter
         uses: subosito/flutter-action@v2
@@ -262,8 +270,10 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: checkout branch
+      - name: checkout source for tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Install dependencies
         run: |
@@ -409,8 +419,10 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: checkout branch
+      - name: checkout source for tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Install dependencies
         run: |
@@ -464,7 +476,3 @@ jobs:
         with:
           artifacts: dist/Mangayomi-*.deb
           allowUpdates: true
-
-  ios-source-build:
-    needs: build-and-release-ios-ipa
-    uses: ./.github/workflows/update_sideloading_source.yml
