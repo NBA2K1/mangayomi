@@ -86,12 +86,12 @@ dependencies:
   screen_brightness: ^2.1.1
   flutter_html: ^3.0.0
   convert: ^3.1.2
-  connectivity_plus: ^7.0.0
+  connectivity_plus: 7.0.0
   app_links: ^7.0.0
   win32: ^5.10.1
   protobuf: ^5.0.0
   fixnum: ^1.1.1
-  device_info_plus: ^12.2.0
+  device_info_plus: 12.3.0
   marquee: ^2.2.3
   d4rt: ^0.2.2
   hive: ^2.2.3
