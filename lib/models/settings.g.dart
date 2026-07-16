@@ -874,48 +874,55 @@ const SettingsSchema = CollectionSchema(
       name: r'ttsVoice',
       type: IsarType.string,
     ),
-    r'updateProgressAfterReading': PropertySchema(
+    r'updateErrorsList': PropertySchema(
       id: 161,
+      name: r'updateErrorsList',
+      type: IsarType.objectList,
+
+      target: r'UpdateError',
+    ),
+    r'updateProgressAfterReading': PropertySchema(
+      id: 162,
       name: r'updateProgressAfterReading',
       type: IsarType.bool,
     ),
     r'updatedAt': PropertySchema(
-      id: 162,
+      id: 163,
       name: r'updatedAt',
       type: IsarType.long,
     ),
     r'useLibass': PropertySchema(
-      id: 163,
+      id: 164,
       name: r'useLibass',
       type: IsarType.bool,
     ),
     r'useMpvConfig': PropertySchema(
-      id: 164,
+      id: 165,
       name: r'useMpvConfig',
       type: IsarType.bool,
     ),
     r'usePageTapZones': PropertySchema(
-      id: 165,
+      id: 166,
       name: r'usePageTapZones',
       type: IsarType.bool,
     ),
     r'useYUV420P': PropertySchema(
-      id: 166,
+      id: 167,
       name: r'useYUV420P',
       type: IsarType.bool,
     ),
     r'userAgent': PropertySchema(
-      id: 167,
+      id: 168,
       name: r'userAgent',
       type: IsarType.string,
     ),
     r'volumeBoostCap': PropertySchema(
-      id: 168,
+      id: 169,
       name: r'volumeBoostCap',
       type: IsarType.long,
     ),
     r'webtoonSidePadding': PropertySchema(
-      id: 169,
+      id: 170,
       name: r'webtoonSidePadding',
       type: IsarType.long,
     ),
@@ -944,6 +951,7 @@ const SettingsSchema = CollectionSchema(
     r'ChapterPageurls': ChapterPageurlsSchema,
     r'ChapterPageIndex': ChapterPageIndexSchema,
     r'MCookie': MCookieSchema,
+    r'UpdateError': UpdateErrorSchema,
     r'PersonalReaderMode': PersonalReaderModeSchema,
     r'FilterScanlator': FilterScanlatorSchema,
     r'L10nLocale': L10nLocaleSchema,
@@ -1424,6 +1432,23 @@ int _settingsEstimateSize(
     }
   }
   {
+    final list = object.updateErrorsList;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        final offsets = allOffsets[UpdateError]!;
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += UpdateErrorSchema.estimateSize(
+            value,
+            offsets,
+            allOffsets,
+          );
+        }
+      }
+    }
+  }
+  {
     final value = object.userAgent;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -1709,15 +1734,21 @@ void _settingsSerialize(
   writer.writeDouble(offsets[158], object.ttsPitch);
   writer.writeDouble(offsets[159], object.ttsSpeechRate);
   writer.writeString(offsets[160], object.ttsVoice);
-  writer.writeBool(offsets[161], object.updateProgressAfterReading);
-  writer.writeLong(offsets[162], object.updatedAt);
-  writer.writeBool(offsets[163], object.useLibass);
-  writer.writeBool(offsets[164], object.useMpvConfig);
-  writer.writeBool(offsets[165], object.usePageTapZones);
-  writer.writeBool(offsets[166], object.useYUV420P);
-  writer.writeString(offsets[167], object.userAgent);
-  writer.writeLong(offsets[168], object.volumeBoostCap);
-  writer.writeLong(offsets[169], object.webtoonSidePadding);
+  writer.writeObjectList<UpdateError>(
+    offsets[161],
+    allOffsets,
+    UpdateErrorSchema.serialize,
+    object.updateErrorsList,
+  );
+  writer.writeBool(offsets[162], object.updateProgressAfterReading);
+  writer.writeLong(offsets[163], object.updatedAt);
+  writer.writeBool(offsets[164], object.useLibass);
+  writer.writeBool(offsets[165], object.useMpvConfig);
+  writer.writeBool(offsets[166], object.usePageTapZones);
+  writer.writeBool(offsets[167], object.useYUV420P);
+  writer.writeString(offsets[168], object.userAgent);
+  writer.writeLong(offsets[169], object.volumeBoostCap);
+  writer.writeLong(offsets[170], object.webtoonSidePadding);
 }
 
 Settings _settingsDeserialize(
@@ -2006,15 +2037,21 @@ Settings _settingsDeserialize(
     ttsPitch: reader.readDoubleOrNull(offsets[158]),
     ttsSpeechRate: reader.readDoubleOrNull(offsets[159]),
     ttsVoice: reader.readStringOrNull(offsets[160]),
-    updateProgressAfterReading: reader.readBoolOrNull(offsets[161]),
-    updatedAt: reader.readLongOrNull(offsets[162]),
-    useLibass: reader.readBoolOrNull(offsets[163]),
-    useMpvConfig: reader.readBoolOrNull(offsets[164]),
-    usePageTapZones: reader.readBoolOrNull(offsets[165]),
-    useYUV420P: reader.readBoolOrNull(offsets[166]),
-    userAgent: reader.readStringOrNull(offsets[167]),
-    volumeBoostCap: reader.readLongOrNull(offsets[168]),
-    webtoonSidePadding: reader.readLongOrNull(offsets[169]),
+    updateErrorsList: reader.readObjectList<UpdateError>(
+      offsets[161],
+      UpdateErrorSchema.deserialize,
+      allOffsets,
+      UpdateError(),
+    ),
+    updateProgressAfterReading: reader.readBoolOrNull(offsets[162]),
+    updatedAt: reader.readLongOrNull(offsets[163]),
+    useLibass: reader.readBoolOrNull(offsets[164]),
+    useMpvConfig: reader.readBoolOrNull(offsets[165]),
+    usePageTapZones: reader.readBoolOrNull(offsets[166]),
+    useYUV420P: reader.readBoolOrNull(offsets[167]),
+    userAgent: reader.readStringOrNull(offsets[168]),
+    volumeBoostCap: reader.readLongOrNull(offsets[169]),
+    webtoonSidePadding: reader.readLongOrNull(offsets[170]),
   );
   object.chapterFilterBookmarkedList = reader
       .readObjectList<ChapterFilterBookmarked>(
@@ -2547,11 +2584,17 @@ P _settingsDeserializeProp<P>(
     case 160:
       return (reader.readStringOrNull(offset)) as P;
     case 161:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readObjectList<UpdateError>(
+            offset,
+            UpdateErrorSchema.deserialize,
+            allOffsets,
+            UpdateError(),
+          ))
+          as P;
     case 162:
-      return (reader.readLongOrNull(offset)) as P;
-    case 163:
       return (reader.readBoolOrNull(offset)) as P;
+    case 163:
+      return (reader.readLongOrNull(offset)) as P;
     case 164:
       return (reader.readBoolOrNull(offset)) as P;
     case 165:
@@ -2559,10 +2602,12 @@ P _settingsDeserializeProp<P>(
     case 166:
       return (reader.readBoolOrNull(offset)) as P;
     case 167:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 168:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 169:
+      return (reader.readLongOrNull(offset)) as P;
+    case 170:
       return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -13836,6 +13881,83 @@ extension SettingsQueryFilter
   }
 
   QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'updateErrorsList'),
+      );
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'updateErrorsList'),
+      );
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'updateErrorsList', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'updateErrorsList', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'updateErrorsList', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'updateErrorsList', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'updateErrorsList',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'updateErrorsList',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
   updateProgressAfterReadingIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -14520,6 +14642,13 @@ extension SettingsQueryObject
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'sortLibraryNovel');
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+  updateErrorsListElement(FilterQuery<UpdateError> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'updateErrorsList');
     });
   }
 }
@@ -20446,6 +20575,13 @@ extension SettingsQueryProperty
     });
   }
 
+  QueryBuilder<Settings, List<UpdateError>?, QQueryOperations>
+  updateErrorsListProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updateErrorsList');
+    });
+  }
+
   QueryBuilder<Settings, bool?, QQueryOperations>
   updateProgressAfterReadingProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -20505,6 +20641,436 @@ extension SettingsQueryProperty
 // **************************************************************************
 // IsarEmbeddedGenerator
 // **************************************************************************
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const UpdateErrorSchema = Schema(
+  name: r'UpdateError',
+  id: -6793279269818166592,
+  properties: {
+    r'error': PropertySchema(id: 0, name: r'error', type: IsarType.string),
+    r'mangaId': PropertySchema(id: 1, name: r'mangaId', type: IsarType.long),
+    r'name': PropertySchema(id: 2, name: r'name', type: IsarType.string),
+  },
+
+  estimateSize: _updateErrorEstimateSize,
+  serialize: _updateErrorSerialize,
+  deserialize: _updateErrorDeserialize,
+  deserializeProp: _updateErrorDeserializeProp,
+);
+
+int _updateErrorEstimateSize(
+  UpdateError object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.error.length * 3;
+  bytesCount += 3 + object.name.length * 3;
+  return bytesCount;
+}
+
+void _updateErrorSerialize(
+  UpdateError object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeString(offsets[0], object.error);
+  writer.writeLong(offsets[1], object.mangaId);
+  writer.writeString(offsets[2], object.name);
+}
+
+UpdateError _updateErrorDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = UpdateError(
+    error: reader.readStringOrNull(offsets[0]) ?? '',
+    mangaId: reader.readLongOrNull(offsets[1]) ?? 0,
+    name: reader.readStringOrNull(offsets[2]) ?? '',
+  );
+  return object;
+}
+
+P _updateErrorDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 1:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 2:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension UpdateErrorQueryFilter
+    on QueryBuilder<UpdateError, UpdateError, QFilterCondition> {
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'error',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition>
+  errorGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'error',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'error',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'error',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'error',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'error',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'error',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'error',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> errorIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'error', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition>
+  errorIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'error', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> mangaIdEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'mangaId', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition>
+  mangaIdGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'mangaId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> mangaIdLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'mangaId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> mangaIdBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'mangaId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'name',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'name',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'name',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition> nameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'name', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<UpdateError, UpdateError, QAfterFilterCondition>
+  nameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'name', value: ''),
+      );
+    });
+  }
+}
+
+extension UpdateErrorQueryObject
+    on QueryBuilder<UpdateError, UpdateError, QFilterCondition> {}
 
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
