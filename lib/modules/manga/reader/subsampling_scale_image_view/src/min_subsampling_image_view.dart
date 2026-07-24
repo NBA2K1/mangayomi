@@ -65,9 +65,14 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
   void didUpdateWidget(MinSubsamplingImage oldWidget) {
     super.didUpdateWidget(oldWidget);
     final bool dataChanged = widget.data != oldWidget.data;
-    final bool imageLoaded = _uiImage == null && widget.data.decodedImage != null;
-    if (dataChanged || imageLoaded || widget.cropBorders != oldWidget.cropBorders) {
-      _loadImage(refresh: dataChanged || widget.cropBorders != oldWidget.cropBorders);
+    final bool imageLoaded =
+        _uiImage == null && widget.data.decodedImage != null;
+    if (dataChanged ||
+        imageLoaded ||
+        widget.cropBorders != oldWidget.cropBorders) {
+      _loadImage(
+        refresh: dataChanged || widget.cropBorders != oldWidget.cropBorders,
+      );
     }
   }
 

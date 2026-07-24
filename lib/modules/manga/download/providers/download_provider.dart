@@ -210,60 +210,67 @@ Future<void> downloadChapter(
     }
 
     if (itemType == ItemType.manga) {
-      ref.read(getChapterPagesProvider(chapter: chapter).future).then((value) {
-        if (value.pageUrls.isNotEmpty) {
-          pageUrls = value.pageUrls;
-          isOk = true;
-        } else {
-          startFailure = "No pages returned by the source";
-        }
-      }).catchError((Object e) {
-        startFailure = "Failed to load chapter pages: $e";
-      });
+      ref
+          .read(getChapterPagesProvider(chapter: chapter).future)
+          .then((value) {
+            if (value.pageUrls.isNotEmpty) {
+              pageUrls = value.pageUrls;
+              isOk = true;
+            } else {
+              startFailure = "No pages returned by the source";
+            }
+          })
+          .catchError((Object e) {
+            startFailure = "Failed to load chapter pages: $e";
+          });
     } else if (itemType == ItemType.anime) {
-      ref.read(getVideoListProvider(episode: chapter).future).then((
-        value,
-      ) async {
-        final m3u8Urls = value.$1
-            .where(
-              (element) =>
-                  element.originalUrl.endsWith(".m3u8") ||
-                  element.originalUrl.endsWith(".m3u"),
-            )
-            .toList();
-        final nonM3u8Urls = value.$1
-            .where((element) => element.originalUrl.isMediaVideo())
-            .toList();
-        nonM3U8File = nonM3u8Urls.isNotEmpty;
-        hasM3U8File = nonM3U8File ? false : m3u8Urls.isNotEmpty;
-        final videosUrls = nonM3U8File ? nonM3u8Urls : m3u8Urls;
-        if (videosUrls.isNotEmpty) {
-          subtitles = videosUrls.first.subtitles;
-          if (hasM3U8File) {
-            m3u8Downloader = M3u8Downloader(
-              m3u8Url: videosUrls.first.url,
-              downloadDir: chapterDirectory.path,
-              headers: videosUrls.first.headers ?? {},
-              subtitles: subtitles,
-              fileName: p.join(mangaMainDirectory!.path, "$chapterName.mp4"),
-              chapter: chapter,
-            );
-          } else {
-            pageUrls = [PageUrl(videosUrls.first.url)];
-          }
-          videoHeader.addAll(videosUrls.first.headers ?? {});
-          isOk = true;
-        } else {
-          // Got a video list but nothing matched .m3u8/.m3u or a known video
-          // extension — record why instead of spinning forever below.
-          startFailure = value.$1.isEmpty
-              ? "No videos returned by the source"
-              : "No downloadable URL among ${value.$1.length} video(s) "
-                    "(none matched .m3u8/.m3u or a known extension)";
-        }
-      }).catchError((Object e) {
-        startFailure = "Failed to load the video list: $e";
-      });
+      ref
+          .read(getVideoListProvider(episode: chapter).future)
+          .then((value) async {
+            final m3u8Urls = value.$1
+                .where(
+                  (element) =>
+                      element.originalUrl.endsWith(".m3u8") ||
+                      element.originalUrl.endsWith(".m3u"),
+                )
+                .toList();
+            final nonM3u8Urls = value.$1
+                .where((element) => element.originalUrl.isMediaVideo())
+                .toList();
+            nonM3U8File = nonM3u8Urls.isNotEmpty;
+            hasM3U8File = nonM3U8File ? false : m3u8Urls.isNotEmpty;
+            final videosUrls = nonM3U8File ? nonM3u8Urls : m3u8Urls;
+            if (videosUrls.isNotEmpty) {
+              subtitles = videosUrls.first.subtitles;
+              if (hasM3U8File) {
+                m3u8Downloader = M3u8Downloader(
+                  m3u8Url: videosUrls.first.url,
+                  downloadDir: chapterDirectory.path,
+                  headers: videosUrls.first.headers ?? {},
+                  subtitles: subtitles,
+                  fileName: p.join(
+                    mangaMainDirectory!.path,
+                    "$chapterName.mp4",
+                  ),
+                  chapter: chapter,
+                );
+              } else {
+                pageUrls = [PageUrl(videosUrls.first.url)];
+              }
+              videoHeader.addAll(videosUrls.first.headers ?? {});
+              isOk = true;
+            } else {
+              // Got a video list but nothing matched .m3u8/.m3u or a known video
+              // extension — record why instead of spinning forever below.
+              startFailure = value.$1.isEmpty
+                  ? "No videos returned by the source"
+                  : "No downloadable URL among ${value.$1.length} video(s) "
+                        "(none matched .m3u8/.m3u or a known extension)";
+            }
+          })
+          .catchError((Object e) {
+            startFailure = "Failed to load the video list: $e";
+          });
     } else if (itemType == ItemType.novel && chapter.url != null) {
       final manga = chapter.manga.value!;
       final source = getSource(manga.lang!, manga.source!, manga.sourceId)!;

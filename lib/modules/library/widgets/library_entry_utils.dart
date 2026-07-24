@@ -77,7 +77,6 @@ Future<void> onTapEntry({
     source: entry.source ?? '',
     sourceId: entry.sourceId,
   );
-
 }
 
 /// A small rounded chip using the theme's hint colour as its background.
@@ -159,7 +158,8 @@ class LibraryBadgeWidget extends ConsumerWidget {
     int downloadCount = 0;
     if (showDownloaded) {
       final downloadedIds =
-          ref.watch(downloadedChapterIdsProvider).asData?.value ?? const <int>{};
+          ref.watch(downloadedChapterIdsProvider).asData?.value ??
+          const <int>{};
       for (final c in entry.chapters) {
         if (c.id != null && downloadedIds.contains(c.id)) {
           downloadCount++;
@@ -188,8 +188,7 @@ class LibraryBadgeWidget extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (hasLocal)
-            const EntryBadgeChip(label: 'Local'),
+          if (hasLocal) const EntryBadgeChip(label: 'Local'),
           if (downloadCount > 0)
             EntryBadgeChip(label: downloadCount.toString()),
           if (unreadCount > 0)

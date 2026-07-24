@@ -1482,11 +1482,11 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     );
   }
 
-
   // d-pad-focusable option data for the TV settings panel — the same track
   // switching the bottom-sheet widgets do, minus the Navigator.pop (the panel
   // is not a route). Records: (label, selected, onTap).
-  List<({String label, bool selected, VoidCallback onTap})> _tvQualityOptions() {
+  List<({String label, bool selected, VoidCallback onTap})>
+  _tvQualityOptions() {
     List<VideoPrefs> videoQuality = _player.state.tracks.video
         .where(
           (element) => element.w != null && element.h != null && widget.isLocal,
@@ -1531,7 +1531,8 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     }).toList();
   }
 
-  List<({String label, bool selected, VoidCallback onTap})> _tvSubtitleOptions() {
+  List<({String label, bool selected, VoidCallback onTap})>
+  _tvSubtitleOptions() {
     List<VideoPrefs> videoSubtitle = _player.state.tracks.subtitle
         .toList()
         .map((e) => VideoPrefs(isLocal: true, subtitle: e))
@@ -1576,27 +1577,32 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     );
     final List<VideoPrefs> last = [];
     for (var element in videoSubtitle) {
-      final key = element.title ??
+      final key =
+          element.title ??
           element.subtitle?.title ??
           element.subtitle?.language ??
           element.subtitle?.channels ??
           "None";
-      final contains = last.any((sub) =>
-          (sub.title ??
-              sub.subtitle?.title ??
-              sub.subtitle?.language ??
-              sub.subtitle?.channels ??
-              "None") ==
-          key);
+      final contains = last.any(
+        (sub) =>
+            (sub.title ??
+                sub.subtitle?.title ??
+                sub.subtitle?.language ??
+                sub.subtitle?.channels ??
+                "None") ==
+            key,
+      );
       if (!contains) last.add(element);
     }
     return last.toSet().toList().map((sub) {
-      final title = sub.title ??
+      final title =
+          sub.title ??
           sub.subtitle?.title ??
           sub.subtitle?.language ??
           sub.subtitle?.channels ??
           "None";
-      final selected = (title ==
+      final selected =
+          (title ==
               (subtitle.title ??
                   subtitle.language ??
                   subtitle.channels ??
@@ -1652,7 +1658,8 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     videoAudio.sort((a, b) => a.title!.compareTo(b.title!));
     videoAudio.insert(0, VideoPrefs(isLocal: false, audio: AudioTrack.no()));
     return videoAudio.toSet().toList().map((aud) {
-      final title = aud.title ??
+      final title =
+          aud.title ??
           aud.audio?.title ??
           aud.audio?.language ??
           aud.audio?.channels ??
@@ -2679,9 +2686,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     // DesktopControllerWidget. On mobile / Android TV the controls have none,
     // so wrap the player so a physical keyboard or TV remote can drive
     // playback too. See #668 / #729.
-    return Scaffold(
-      body: isDesktop ? body : _wrapWithPlayerShortcuts(body),
-    );
+    return Scaffold(body: isDesktop ? body : _wrapWithPlayerShortcuts(body));
   }
 
   /// Maps keyboard and TV-remote keys to player actions for non-desktop
@@ -2712,7 +2717,8 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
         // (and arrow-key focus movement with a keyboard) instead of seeking.
         const SingleActivator(LogicalKeyboardKey.keyJ): () => seekBy(-10),
         const SingleActivator(LogicalKeyboardKey.keyL): () => seekBy(10),
-        const SingleActivator(LogicalKeyboardKey.mediaRewind): () => seekBy(-10),
+        const SingleActivator(LogicalKeyboardKey.mediaRewind): () =>
+            seekBy(-10),
         const SingleActivator(LogicalKeyboardKey.mediaFastForward): () =>
             seekBy(10),
         const SingleActivator(LogicalKeyboardKey.mediaTrackNext): () {

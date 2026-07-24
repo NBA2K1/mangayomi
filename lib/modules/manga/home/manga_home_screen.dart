@@ -217,13 +217,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
           filterList: filters,
         ),
       );
-    } else if (_selectedIndex == 1 &&
-        (!_isSearch || isTv) &&
-        _query.isEmpty) {
+    } else if (_selectedIndex == 1 && (!_isSearch || isTv) && _query.isEmpty) {
       _getManga = ref.watch(getLatestUpdatesProvider(source: source, page: 1));
-    } else if (_selectedIndex == 0 &&
-        (!_isSearch || isTv) &&
-        _query.isEmpty) {
+    } else if (_selectedIndex == 0 && (!_isSearch || isTv) && _query.isEmpty) {
       _getManga = ref.watch(getPopularProvider(source: source, page: 1));
     }
     final l10n = context.l10n;
@@ -329,12 +325,18 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   context,
                   title: context.l10n.display_mode,
                   options: [
-                    TvMenuOption(context.l10n.comfortable_grid,
-                        selected: current == DisplayType.comfortableGrid),
-                    TvMenuOption(context.l10n.compact_grid,
-                        selected: current == DisplayType.compactGrid),
-                    TvMenuOption(context.l10n.list,
-                        selected: current == DisplayType.list),
+                    TvMenuOption(
+                      context.l10n.comfortable_grid,
+                      selected: current == DisplayType.comfortableGrid,
+                    ),
+                    TvMenuOption(
+                      context.l10n.compact_grid,
+                      selected: current == DisplayType.compactGrid,
+                    ),
+                    TvMenuOption(
+                      context.l10n.list,
+                      selected: current == DisplayType.list,
+                    ),
                   ],
                 );
                 if (picked != null) {
@@ -346,45 +348,47 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
             )
           else
             PopupMenuButton(
-            popUpAnimationStyle: popupAnimationStyle,
-            icon: Icon(displayTypeIcon),
-            itemBuilder: (context) {
-              final displayType = ref.watch(mangaHomeDisplayTypeStateProvider);
-              final displayTypeNotifier = ref.read(
-                mangaHomeDisplayTypeStateProvider.notifier,
-              );
-              return [
-                PopupMenuItem<int>(
-                  value: 0,
-                  child: RadioGroup(
-                    groupValue: displayType,
-                    onChanged: (a) {
-                      context.pop();
-                      displayTypeNotifier.setMangaHomeDisplayType(a!);
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        RadioListTile(
-                          title: Text(context.l10n.comfortable_grid),
-                          value: DisplayType.comfortableGrid,
-                        ),
-                        RadioListTile(
-                          title: Text(context.l10n.compact_grid),
-                          value: DisplayType.compactGrid,
-                        ),
-                        RadioListTile(
-                          title: Text(context.l10n.list),
-                          value: DisplayType.list,
-                        ),
-                      ],
+              popUpAnimationStyle: popupAnimationStyle,
+              icon: Icon(displayTypeIcon),
+              itemBuilder: (context) {
+                final displayType = ref.watch(
+                  mangaHomeDisplayTypeStateProvider,
+                );
+                final displayTypeNotifier = ref.read(
+                  mangaHomeDisplayTypeStateProvider.notifier,
+                );
+                return [
+                  PopupMenuItem<int>(
+                    value: 0,
+                    child: RadioGroup(
+                      groupValue: displayType,
+                      onChanged: (a) {
+                        context.pop();
+                        displayTypeNotifier.setMangaHomeDisplayType(a!);
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RadioListTile(
+                            title: Text(context.l10n.comfortable_grid),
+                            value: DisplayType.comfortableGrid,
+                          ),
+                          RadioListTile(
+                            title: Text(context.l10n.compact_grid),
+                            value: DisplayType.compactGrid,
+                          ),
+                          RadioListTile(
+                            title: Text(context.l10n.list),
+                            value: DisplayType.list,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ];
-            },
-            onSelected: (value) {},
-          ),
+                ];
+              },
+              onSelected: (value) {},
+            ),
           if (!isLocal)
             if (isTv)
               IconButton(
