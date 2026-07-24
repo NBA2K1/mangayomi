@@ -305,9 +305,7 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
 
     final newVisible = positions.map((p) => p.index).toSet();
     if (!setEquals(_visibleIndices, newVisible)) {
-      setState(() {
-        _visibleIndices = newVisible;
-      });
+      _visibleIndices = newVisible;
       // Propagate visibility updates in O(1) to cached notifiers
       for (final index in _isVisibleNotifiers.keys) {
         _isVisibleNotifiers[index]?.value = newVisible.contains(index);
