@@ -21,7 +21,6 @@ class MinSubsamplingImage extends ConsumerStatefulWidget {
   final bool cropBorders;
   final bool isHorizontal;
   final Function(bool) failedToLoadImage;
-  final ValueNotifier<bool> isVisible;
 
   final Widget? Function(SubsamplingImageState)? loadStateChanged;
   final int rotation;
@@ -36,7 +35,6 @@ class MinSubsamplingImage extends ConsumerStatefulWidget {
     required this.cropBorders,
     required this.isHorizontal,
     required this.failedToLoadImage,
-    required this.isVisible,
     this.loadStateChanged,
     this.rotation = 0,
     this.onImageLoaded,
