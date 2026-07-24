@@ -302,7 +302,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
     final placeholderHeight = widget.data.loadedHeight ?? context.height(0.8);
     final placeholderWidth = widget.isHorizontal
         ? (widget.data.loadedWidth ?? context.width(0.8))
-        : null;
+        : double.infinity;
 
     if (_isLoading && _uiImage == null) {
       final double progress = _loadingProgress?.expectedTotalBytes != null
@@ -334,6 +334,7 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: _loadImage,
+                onLongPress: _loadImage,
                 child: Container(
                   decoration: BoxDecoration(
                     color: context.primaryColor,
