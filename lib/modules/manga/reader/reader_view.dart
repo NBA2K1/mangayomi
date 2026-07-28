@@ -203,6 +203,7 @@ class _MangaChapterPageGalleryState
       _readerController.setPageIndex(
         _isDoublePageActiveSync ? index : _geCurrentIndex(index),
         true,
+        _chapterUrlModel.pageUrls,
       );
     }
     disposePreloadManager();
@@ -222,6 +223,7 @@ class _MangaChapterPageGalleryState
         _readerController.setPageIndex(
           _isDoublePageActive ? index : _geCurrentIndex(index),
           true,
+          _chapterUrlModel.pageUrls,
         );
       }
     } else if (state == AppLifecycleState.resumed) {
@@ -944,6 +946,7 @@ class _MangaChapterPageGalleryState
         _readerController.setPageIndex(
           _isDoublePageActive ? idx : _geCurrentIndex(idx),
           false,
+          _chapterUrlModel.pageUrls,
         );
         ref.read(currentIndexProvider(chapter).notifier).setCurrentIndex(idx);
       }
@@ -1254,6 +1257,7 @@ class _MangaChapterPageGalleryState
       _readerController.setPageIndex(
         _isDoublePageActive ? idx : _geCurrentIndex(idx),
         false,
+        _chapterUrlModel.pageUrls,
       );
     }
     if (_readerController.chapter.id != pages[actualIndex].chapter!.id) {
