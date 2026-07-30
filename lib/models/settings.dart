@@ -21,6 +21,12 @@ class Settings {
 
   int? libraryFilterMangasBookMarkedType;
 
+  List<String>? libraryFilterMangasSourceIds;
+
+  List<String>? libraryFilterAnimeSourceIds;
+
+  List<String>? libraryFilterNovelSourceIds;
+
   bool? libraryShowCategoryTabs;
 
   bool? libraryDownloadedChapters;
@@ -373,6 +379,9 @@ class Settings {
     this.libraryFilterMangasUnreadType = 0,
     this.libraryFilterMangasStartedType = 0,
     this.libraryFilterMangasBookMarkedType = 0,
+    this.libraryFilterMangasSourceIds,
+    this.libraryFilterAnimeSourceIds,
+    this.libraryFilterNovelSourceIds,
     this.libraryShowCategoryTabs = false,
     this.libraryDownloadedChapters = false,
     this.libraryShowLanguage = false,
@@ -614,6 +623,9 @@ class Settings {
     libraryFilterAnimeUnreadType = json['libraryFilterAnimeUnreadType'];
     libraryFilterMangasBookMarkedType =
         json['libraryFilterMangasBookMarkedType'];
+    libraryFilterMangasSourceIds = json['libraryFilterMangasSourceIds'];
+    libraryFilterAnimeSourceIds = json['libraryFilterAnimeSourceIds'];
+    libraryFilterNovelSourceIds = json['libraryFilterNovelSourceIds'];
     libraryFilterMangasDownloadType = json['libraryFilterMangasDownloadType'];
     libraryFilterMangasStartedType = json['libraryFilterMangasStartedType'];
     libraryFilterMangasUnreadType = json['libraryFilterMangasUnreadType'];
@@ -873,6 +885,9 @@ class Settings {
     'libraryFilterAnimeStartedType': libraryFilterAnimeStartedType,
     'libraryFilterAnimeUnreadType': libraryFilterAnimeUnreadType,
     'libraryFilterMangasBookMarkedType': libraryFilterMangasBookMarkedType,
+    'libraryFilterMangasSourceIds': libraryFilterMangasSourceIds,
+    'libraryFilterAnimeSourceIds': libraryFilterAnimeSourceIds,
+    'libraryFilterNovelSourceIds': libraryFilterNovelSourceIds,
     'libraryFilterMangasDownloadType': libraryFilterMangasDownloadType,
     'libraryFilterMangasStartedType': libraryFilterMangasStartedType,
     'libraryFilterMangasUnreadType': libraryFilterMangasUnreadType,

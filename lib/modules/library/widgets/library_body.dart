@@ -37,6 +37,7 @@ class LibraryBody extends ConsumerWidget {
   final bool downloadedOnly;
   final String searchQuery;
   final bool ignoreFiltersOnSearch;
+  final List<String> sourceIds;
 
   const LibraryBody({
     super.key,
@@ -59,6 +60,7 @@ class LibraryBody extends ConsumerWidget {
     required this.downloadedOnly,
     required this.searchQuery,
     required this.ignoreFiltersOnSearch,
+    required this.sourceIds,
   });
 
   @override
@@ -99,6 +101,7 @@ class LibraryBody extends ConsumerWidget {
             downloadedOnly: downloadedOnly,
             searchQuery: searchQuery,
             ignoreFiltersOnSearch: ignoreFiltersOnSearch,
+            sourceIds: sourceIds,
           ),
         );
 
@@ -161,6 +164,7 @@ class CategoryBadge extends ConsumerWidget {
   final bool downloadedOnly;
   final String searchQuery;
   final bool ignoreFiltersOnSearch;
+  final List<String> sourceIds;
 
   const CategoryBadge({
     super.key,
@@ -176,6 +180,7 @@ class CategoryBadge extends ConsumerWidget {
     required this.downloadedOnly,
     required this.searchQuery,
     required this.ignoreFiltersOnSearch,
+    required this.sourceIds,
   });
 
   @override
@@ -204,6 +209,7 @@ class CategoryBadge extends ConsumerWidget {
             downloadedOnly: downloadedOnly,
             searchQuery: searchQuery,
             ignoreFiltersOnSearch: ignoreFiltersOnSearch,
+            sourceIds: sourceIds,
           ),
         );
         return CircleAvatar(
