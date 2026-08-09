@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -15,6 +16,7 @@ class LibraryListViewWidget extends StatelessWidget {
   final Set<int> mangaIdsList;
   final bool continueReaderBtn;
   final bool localSource;
+  final Settings settings;
   const LibraryListViewWidget({
     super.key,
     required this.entriesManga,
@@ -23,6 +25,7 @@ class LibraryListViewWidget extends StatelessWidget {
     required this.continueReaderBtn,
     required this.mangaIdsList,
     required this.localSource,
+    required this.settings,
   });
 
   @override
@@ -122,7 +125,9 @@ class LibraryListViewWidget extends StatelessWidget {
                                         right: 3,
                                       ),
                                       child: Text(
-                                        entry.unreadChaptersCount.toString(),
+                                        entry
+                                            .unreadChaptersCount(settings)
+                                            .toString(),
                                         style: TextStyle(
                                           color: context.dynamicBlackWhiteColor,
                                         ),

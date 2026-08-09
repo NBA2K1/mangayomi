@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/download.dart';
@@ -41,6 +42,7 @@ List<Manga> filteredLibraryManga(
   required String searchQuery,
   required bool ignoreFiltersOnSearch,
   required List<String> sourceIds,
+  required Settings settings,
 }) {
   final downloadedIds =
       ref.watch(downloadedChapterIdsProvider).asData?.value ?? const <int>{};
@@ -134,7 +136,9 @@ List<Manga> filteredLibraryManga(
       case 2:
         return a.lastUpdate?.compareTo(b.lastUpdate ?? 0) ?? 0;
       case 3:
-        return a.unreadChaptersCount.compareTo(b.unreadChaptersCount);
+        return a
+            .unreadChaptersCount(settings)
+            .compareTo(b.unreadChaptersCount(settings));
       case 4:
         return a.chapters.length.compareTo(b.chapters.length);
       case 5:

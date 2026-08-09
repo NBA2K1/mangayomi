@@ -254,6 +254,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                       searchQuery: searchQuery,
                       ignoreFiltersOnSearch: _ignoreFiltersOnSearch,
                       sourceIds: sourceFilterIds,
+                      settings: settings,
                     ),
                   );
 

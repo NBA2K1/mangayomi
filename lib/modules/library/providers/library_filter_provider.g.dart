@@ -123,6 +123,7 @@ final class FilteredLibraryMangaProvider
       String searchQuery,
       bool ignoreFiltersOnSearch,
       List<String> sourceIds,
+      Settings settings,
     })
     super.argument,
   }) : super(
@@ -165,6 +166,7 @@ final class FilteredLibraryMangaProvider
               String searchQuery,
               bool ignoreFiltersOnSearch,
               List<String> sourceIds,
+              Settings settings,
             });
     return filteredLibraryManga(
       ref,
@@ -180,6 +182,7 @@ final class FilteredLibraryMangaProvider
       searchQuery: argument.searchQuery,
       ignoreFiltersOnSearch: argument.ignoreFiltersOnSearch,
       sourceIds: argument.sourceIds,
+      settings: argument.settings,
     );
   }
 
@@ -203,7 +206,7 @@ final class FilteredLibraryMangaProvider
 }
 
 String _$filteredLibraryMangaHash() =>
-    r'b6b0e103cfae27390e27ced8dd8d2bab17a8c811';
+    r'e3204cd38adddf6954b94fe516dffa5e6ddf08dc';
 
 /// Filters and sorts a list of [Manga] based on library filter/sort settings.
 
@@ -224,6 +227,7 @@ final class FilteredLibraryMangaFamily extends $Family
             String searchQuery,
             bool ignoreFiltersOnSearch,
             List<String> sourceIds,
+            Settings settings,
           })
         > {
   FilteredLibraryMangaFamily._()
@@ -250,6 +254,7 @@ final class FilteredLibraryMangaFamily extends $Family
     required String searchQuery,
     required bool ignoreFiltersOnSearch,
     required List<String> sourceIds,
+    required Settings settings,
   }) => FilteredLibraryMangaProvider._(
     argument: (
       data: data,
@@ -264,6 +269,7 @@ final class FilteredLibraryMangaFamily extends $Family
       searchQuery: searchQuery,
       ignoreFiltersOnSearch: ignoreFiltersOnSearch,
       sourceIds: sourceIds,
+      settings: settings,
     ),
     from: this,
   );

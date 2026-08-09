@@ -102,6 +102,7 @@ class LibraryBody extends ConsumerWidget {
             searchQuery: searchQuery,
             ignoreFiltersOnSearch: ignoreFiltersOnSearch,
             sourceIds: sourceIds,
+            settings: settings,
           ),
         );
 
@@ -127,6 +128,7 @@ class LibraryBody extends ConsumerWidget {
                   language: language,
                   mangaIdsList: mangaIdsList,
                   localSource: localSource,
+                  settings: settings,
                 )
               : LibraryGridViewWidget(
                   entriesManga: entriesManga,
@@ -138,6 +140,7 @@ class LibraryBody extends ConsumerWidget {
                   mangaIdsList: mangaIdsList,
                   localSource: localSource,
                   itemType: itemType,
+                  settings: settings,
                 ),
         );
       },
@@ -210,6 +213,7 @@ class CategoryBadge extends ConsumerWidget {
             searchQuery: searchQuery,
             ignoreFiltersOnSearch: ignoreFiltersOnSearch,
             sourceIds: sourceIds,
+            settings: settings,
           ),
         );
         return CircleAvatar(
