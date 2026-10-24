@@ -66,6 +66,9 @@ class ReaderBottomBar extends ConsumerWidget {
   /// Session-local current page index for the visible reader state.
   final ValueListenable<int> currentPageListenable;
 
+  /// Whether a chapter transition page is showing (labels are hidden then).
+  final ValueListenable<bool> isTransitionPageListenable;
+
   /// Current page mode (nullable for safety)
   final PageMode? currentPageMode;
 
@@ -96,6 +99,7 @@ class ReaderBottomBar extends ConsumerWidget {
     required this.onSettingsPressed,
     required this.currentReaderModeProvider,
     required this.currentPageListenable,
+    required this.isTransitionPageListenable,
     required this.currentPageMode,
     required this.isReverseHorizontal,
     required this.totalPages,
@@ -199,7 +203,13 @@ class ReaderBottomBar extends ConsumerWidget {
                         child: Center(
                           child: Consumer(
                             builder: (context, ref, child) {
-                              return ValueListenableBuilder<int>(
+                              return ValueListenableBuilder<bool>(
+                                valueListenable: isTransitionPageListenable,
+                                builder: (context, onTransition, child) =>
+                                    onTransition
+                                    ? const SizedBox.shrink()
+                                    : child!,
+                                child: ValueListenableBuilder<int>(
                                 valueListenable: currentPageListenable,
                                 builder: (context, currentIndex, child) {
                                   return Text(
@@ -210,6 +220,7 @@ class ReaderBottomBar extends ConsumerWidget {
                                     ),
                                   );
                                 },
+                                ),
                               );
                             },
                           ),
@@ -234,12 +245,18 @@ class ReaderBottomBar extends ConsumerWidget {
                       child: SizedBox(
                         width: 55,
                         child: Center(
-                          child: Text(
-                            "$totalPages",
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: isTransitionPageListenable,
+                            builder: (context, onTransition, _) =>
+                                onTransition
+                                ? const SizedBox.shrink()
+                                : Text(
+                                    "$totalPages",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),

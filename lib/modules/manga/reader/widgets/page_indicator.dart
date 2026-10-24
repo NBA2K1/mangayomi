@@ -14,6 +14,9 @@ class PageIndicator extends ConsumerWidget {
   /// Session-local current page index for the visible reader state.
   final ValueListenable<int> currentPageListenable;
 
+  /// Whether a chapter transition page is showing (counter is hidden then).
+  final ValueListenable<bool> isTransitionPageListenable;
+
   /// Total number of pages.
   final int totalPages;
 
@@ -24,6 +27,7 @@ class PageIndicator extends ConsumerWidget {
     super.key,
     required this.isUiVisible,
     required this.currentPageListenable,
+    required this.isTransitionPageListenable,
     required this.totalPages,
     required this.formatCurrentIndex,
   });
@@ -39,7 +43,11 @@ class PageIndicator extends ConsumerWidget {
 
     return Align(
       alignment: Alignment.bottomCenter,
-      child: ValueListenableBuilder<int>(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isTransitionPageListenable,
+        builder: (context, onTransition, child) =>
+            onTransition ? const SizedBox.shrink() : child!,
+        child: ValueListenableBuilder<int>(
         valueListenable: currentPageListenable,
         builder: (context, currentIndex, child) {
           return Text(
@@ -57,6 +65,7 @@ class PageIndicator extends ConsumerWidget {
             textAlign: TextAlign.center,
           );
         },
+        ),
       ),
     );
   }
