@@ -206,6 +206,7 @@ class _MangaChapterPageGalleryState
     _autoScroll.dispose();
     _autoScrollPage.dispose();
     _currentPageDisplayIndex.dispose();
+    _isOnTransitionPage.dispose();
     _keyboardFocusNode.dispose();
     _continuousScrollController.removeListener(_scheduleReadProgressListener);
     _listController.removeListener(_scheduleReadProgressListener);
@@ -330,6 +331,10 @@ class _MangaChapterPageGalleryState
   late final ValueNotifier<int?> _currentPageViewIndex = ValueNotifier(
     _currentIndex,
   );
+  /// True while a chapter transition page is shown, so the page counters can
+  /// hide instead of showing a number that belongs to no page.
+  final ValueNotifier<bool> _isOnTransitionPage = ValueNotifier(false);
+
   late final ValueNotifier<int> _currentPageDisplayIndex = ValueNotifier(
     _savedPageIndex,
   );
@@ -922,6 +927,7 @@ class _MangaChapterPageGalleryState
                   ),
                   currentReaderModeProvider: _currentReaderMode,
                   currentPageListenable: _currentPageDisplayIndex,
+                  isTransitionPageListenable: _isOnTransitionPage,
                   currentPageMode: effectivePageMode,
                   isReverseHorizontal: _isReverseHorizontal,
                   totalPages: _readerController.getCachedPageLength(
@@ -934,6 +940,7 @@ class _MangaChapterPageGalleryState
                   child: PageIndicator(
                     isUiVisible: _isView,
                     currentPageListenable: _currentPageDisplayIndex,
+                    isTransitionPageListenable: _isOnTransitionPage,
                     totalPages: _readerController.getCachedPageLength(
                       _chapterUrlModel.pageUrls,
                     ),
@@ -1534,7 +1541,14 @@ class _MangaChapterPageGalleryState
       );
       chapter = newChapter;
 
-      final chapterUrlModel = pages[actualIndex].chapterUrlModel;
+      // Transition pages carry no chapterUrlModel, but they always sit
+      // directly after the last page of the chapter they belong to.
+      final chapterUrlModel =
+          pages[actualIndex].chapterUrlModel ??
+          (actualIndex > 0 &&
+                  pages[actualIndex - 1].chapter?.id == newChapter.id
+              ? pages[actualIndex - 1].chapterUrlModel
+              : null);
       if (chapterUrlModel != null) {
         _chapterUrlModel = chapterUrlModel;
       }
@@ -1556,6 +1570,7 @@ class _MangaChapterPageGalleryState
   ///
   /// Used by both PageView mode and continuous scrolling mode.
   void _updateDisplayIndex(int actualIndex, bool pageView) {
+    _isOnTransitionPage.value = pages[actualIndex].isTransitionPage;
     final idx = pages[actualIndex].index;
     if (idx == null) return;
     if (_currentPageDisplayIndex.value != idx) {
