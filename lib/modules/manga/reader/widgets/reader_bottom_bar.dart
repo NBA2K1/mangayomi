@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/custom_value_indicator_shape.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/hide_on_transition.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -196,34 +197,12 @@ class ReaderBottomBar extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Current page label
-                    Transform.scale(
-                      scaleX: !isReverseHorizontal ? 1 : -1,
-                      child: SizedBox(
-                        width: 55,
-                        child: Center(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              return ValueListenableBuilder<bool>(
-                                valueListenable: isTransitionPageListenable,
-                                builder: (context, onTransition, child) =>
-                                    onTransition
-                                    ? const SizedBox.shrink()
-                                    : child!,
-                                child: ValueListenableBuilder<int>(
-                                valueListenable: currentPageListenable,
-                                builder: (context, currentIndex, child) {
-                                  return Text(
-                                    currentIndexLabel(currentIndex),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  );
-                                },
-                                ),
-                              );
-                            },
-                          ),
+                    _buildCountLabel(
+                      ValueListenableBuilder<int>(
+                        valueListenable: currentPageListenable,
+                        builder: (context, currentIndex, _) => Text(
+                          currentIndexLabel(currentIndex),
+                          style: _countLabelStyle,
                         ),
                       ),
                     ),
@@ -240,26 +219,8 @@ class ReaderBottomBar extends ConsumerWidget {
                       ),
 
                     // Total pages label
-                    Transform.scale(
-                      scaleX: !isReverseHorizontal ? 1 : -1,
-                      child: SizedBox(
-                        width: 55,
-                        child: Center(
-                          child: ValueListenableBuilder<bool>(
-                            valueListenable: isTransitionPageListenable,
-                            builder: (context, onTransition, _) =>
-                                onTransition
-                                ? const SizedBox.shrink()
-                                : Text(
-                                    "$totalPages",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
+                    _buildCountLabel(
+                      Text("$totalPages", style: _countLabelStyle),
                     ),
                   ],
                 ),
@@ -289,6 +250,28 @@ class ReaderBottomBar extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  static const _countLabelStyle = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.bold,
+  );
+
+  /// Fixed-width box for the page counts on either side of the slider. The
+  /// width is kept while hidden so the slider doesn't shift on transition pages.
+  Widget _buildCountLabel(Widget label) {
+    return Transform.scale(
+      scaleX: !isReverseHorizontal ? 1 : -1,
+      child: SizedBox(
+        width: 55,
+        child: Center(
+          child: HideOnTransition(
+            isTransitionPage: isTransitionPageListenable,
+            child: label,
+          ),
+        ),
       ),
     );
   }
