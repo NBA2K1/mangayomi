@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/hide_on_transition.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 
 /// Page indicator widget showing current page / total pages.
@@ -43,28 +44,26 @@ class PageIndicator extends ConsumerWidget {
 
     return Align(
       alignment: Alignment.bottomCenter,
-      child: ValueListenableBuilder<bool>(
-        valueListenable: isTransitionPageListenable,
-        builder: (context, onTransition, child) =>
-            onTransition ? const SizedBox.shrink() : child!,
+      child: HideOnTransition(
+        isTransitionPage: isTransitionPageListenable,
         child: ValueListenableBuilder<int>(
-        valueListenable: currentPageListenable,
-        builder: (context, currentIndex, child) {
-          return Text(
-            '${formatCurrentIndex(currentIndex)} / $totalPages',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20.0,
-              shadows: [
-                Shadow(offset: Offset(-1, -1), blurRadius: 1),
-                Shadow(offset: Offset(1, -1), blurRadius: 1),
-                Shadow(offset: Offset(1, 1), blurRadius: 1),
-                Shadow(offset: Offset(-1, 1), blurRadius: 1),
-              ],
-            ),
-            textAlign: TextAlign.center,
-          );
-        },
+          valueListenable: currentPageListenable,
+          builder: (context, currentIndex, child) {
+            return Text(
+              '${formatCurrentIndex(currentIndex)} / $totalPages',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20.0,
+                shadows: [
+                  Shadow(offset: Offset(-1, -1), blurRadius: 1),
+                  Shadow(offset: Offset(1, -1), blurRadius: 1),
+                  Shadow(offset: Offset(1, 1), blurRadius: 1),
+                  Shadow(offset: Offset(-1, 1), blurRadius: 1),
+                ],
+              ),
+              textAlign: TextAlign.center,
+            );
+          },
         ),
       ),
     );
