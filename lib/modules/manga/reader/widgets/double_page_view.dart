@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/transition_view_paged.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/transition_view_vertical.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/transition_view.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/circular_progress_indicator_animate_rotate.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
@@ -237,9 +236,10 @@ class _DoublePageViewState extends State<DoublePageView>
 
     if (transitionPage == null) return const SizedBox.shrink();
 
-    return widget.isPagedMode
-        ? TransitionViewPaged(data: transitionPage)
-        : TransitionViewVertical(data: transitionPage);
+    return TransitionView(
+      data: transitionPage,
+      fillScreenHeight: !widget.isPagedMode,
+    );
   }
 
   Widget _buildPagedMode() {
