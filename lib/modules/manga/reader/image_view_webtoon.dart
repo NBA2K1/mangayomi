@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
 import 'package:mangayomi/modules/manga/reader/image_view_vertical.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/transition_view_vertical.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/transition_view.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -619,7 +619,7 @@ class _ImageViewWebtoonState extends ConsumerState<ImageViewWebtoon>
         : 0;
 
     if (currentPage.isTransitionPage) {
-      return TransitionViewVertical(data: currentPage);
+      return TransitionView(data: currentPage, fillScreenHeight: true);
     }
 
     int rotation = 0;

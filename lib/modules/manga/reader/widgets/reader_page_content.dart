@@ -12,7 +12,7 @@ import 'package:mangayomi/modules/manga/reader/widgets/circular_progress_indicat
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/image_actions_dialog.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/transition_view_paged.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/transition_view.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -284,7 +284,7 @@ class ReaderPagedItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (page.isTransitionPage) return TransitionViewPaged(data: page);
+    if (page.isTransitionPage) return TransitionView(data: page);
 
     return ImageViewPaged(
       data: page,
