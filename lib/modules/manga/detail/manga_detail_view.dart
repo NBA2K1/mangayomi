@@ -35,6 +35,8 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/riverpod.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
+/// the body: chapter list, selection mode and app bar,
+/// and it dispatches to the TV layout
 class MangaDetailView extends ConsumerStatefulWidget {
   final Function(bool) isExtended;
   final Widget? titleDescription;
