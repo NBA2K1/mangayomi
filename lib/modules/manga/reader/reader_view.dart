@@ -418,7 +418,9 @@ class _MangaChapterPageGalleryState
   late final _panAnimator = DoublePagePanAnimator(this);
   static const _zoomNav = DoublePageZoomNavigation();
 
-  void _handleNextPageZoomed() {
+  /// Pans the zoomed double page one step in the requested direction, or
+  /// turns the page once the pan has reached its edge.
+  void _handlePageZoomed({required bool forward}) {
     final controller = _doublePageControllers[_currentIndex];
     if (controller == null) return;
 
@@ -426,14 +428,17 @@ class _MangaChapterPageGalleryState
     final scale = controller.scale ?? 1.0;
     final maxX = screenWidth * (scale - 1.0) / 2.0;
 
-    final targetDx = _zoomNav.nextPanTarget(
+    final panTarget = forward
+        ? _zoomNav.nextPanTarget
+        : _zoomNav.previousPanTarget;
+    final targetDx = panTarget(
       dx: controller.position.dx,
       maxX: maxX,
       step: screenWidth * 0.4,
       isReverseHorizontal: _isReverseHorizontal,
     );
     if (targetDx == null) {
-      _handlePageNavigation(forward: true);
+      _handlePageNavigation(forward: forward);
     } else {
       _panAnimator.animateTo(
         controllerLookup: () => _doublePageControllers[_currentIndex],
@@ -442,27 +447,13 @@ class _MangaChapterPageGalleryState
     }
   }
 
-  void _handlePreviousPageZoomed() {
-    final controller = _doublePageControllers[_currentIndex];
-    if (controller == null) return;
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final scale = controller.scale ?? 1.0;
-    final maxX = screenWidth * (scale - 1.0) / 2.0;
-
-    final targetDx = _zoomNav.previousPanTarget(
-      dx: controller.position.dx,
-      maxX: maxX,
-      step: screenWidth * 0.4,
-      isReverseHorizontal: _isReverseHorizontal,
-    );
-    if (targetDx == null) {
-      _handlePageNavigation(forward: false);
+  /// Next/previous page request from a tap or key press: pans a zoomed
+  /// double page first, otherwise turns the page.
+  void _onPageStep({required bool forward}) {
+    if (_isCurrentPageZoomed && _doublePageControllers[_currentIndex] != null) {
+      _handlePageZoomed(forward: forward);
     } else {
-      _panAnimator.animateTo(
-        controllerLookup: () => _doublePageControllers[_currentIndex],
-        targetDx: targetDx,
-      );
+      _handlePageNavigation(forward: forward);
     }
   }
 
@@ -579,22 +570,16 @@ class _MangaChapterPageGalleryState
     final doublePageAuto = ref.watch(doublePageAutoStateProvider);
     final orientation = MediaQuery.orientationOf(context);
     final effectivePageMode = doublePageAuto
-        ? (orientation == Orientation.landscape
-              ? PageMode.doublePage
-              : PageMode.onePage)
+        ? _pageModeForOrientation(orientation)
         : _pageMode;
 
     final prevEffectiveMode = _lastEffectivePageMode ?? _pageMode;
     if (prevEffectiveMode != effectivePageMode) {
       final currentActual = _getCurrentPagesActualIndex(prevEffectiveMode);
-      final targetIndex = effectivePageMode == PageMode.doublePage
-          ? ReaderPageIndexMath(
-              isDoublePageActive: true,
-              singleFirst: ref.read(doublePageSingleFirstPageStateProvider),
-              pageCount: pages.length,
-              pages: pages,
-            ).actualToPageViewIndex(currentActual)
-          : currentActual;
+      final targetIndex = _pageViewIndexForMode(
+        effectivePageMode,
+        currentActual,
+      );
       _currentIndex = targetIndex;
       _currentPageViewIndex.value = targetIndex;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -633,22 +618,8 @@ class _MangaChapterPageGalleryState
     });
 
     return ReaderKeyboardHandler(
-      onPreviousPage: () {
-        if (_isCurrentPageZoomed &&
-            _doublePageControllers[_currentIndex] != null) {
-          _handlePreviousPageZoomed();
-        } else {
-          _handlePageNavigation(forward: false);
-        }
-      },
-      onNextPage: () {
-        if (_isCurrentPageZoomed &&
-            _doublePageControllers[_currentIndex] != null) {
-          _handleNextPageZoomed();
-        } else {
-          _handlePageNavigation(forward: true);
-        }
-      },
+      onPreviousPage: () => _onPageStep(forward: false),
+      onNextPage: () => _onPageStep(forward: true),
       onEscape: () => _goBack(context),
       onFullScreen: () => _setFullScreen(),
       onNextChapter: () => _goToChapter(true),
@@ -754,22 +725,8 @@ class _MangaChapterPageGalleryState
                       hasCurrentPageImageError: hasCurrentError,
                       isContinuousMode: readerMode.isContinuous,
                       onToggleUI: _isViewFunction,
-                      onPreviousPage: () {
-                        if (_isCurrentPageZoomed &&
-                            _doublePageControllers[_currentIndex] != null) {
-                          _handlePreviousPageZoomed();
-                        } else {
-                          _handlePageNavigation(forward: false);
-                        }
-                      },
-                      onNextPage: () {
-                        if (_isCurrentPageZoomed &&
-                            _doublePageControllers[_currentIndex] != null) {
-                          _handleNextPageZoomed();
-                        } else {
-                          _handlePageNavigation(forward: true);
-                        }
-                      },
+                      onPreviousPage: () => _onPageStep(forward: false),
+                      onNextPage: () => _onPageStep(forward: true),
                       isFlashing: _isFlashing,
                       flashOverlayColor: _flashOverlayColor,
                       showNavigationOverlay: _showNavigationOverlay,
@@ -873,17 +830,10 @@ class _MangaChapterPageGalleryState
                       ref.read(doublePageAutoStateProvider.notifier).set(false);
                       _readerController.setPageMode(newPageMode);
 
-                      final singleFirst = ref.read(
-                        doublePageSingleFirstPageStateProvider,
+                      final int targetIndex = _pageViewIndexForMode(
+                        newPageMode,
+                        currentActual,
                       );
-                      final int targetIndex = newPageMode == PageMode.doublePage
-                          ? ReaderPageIndexMath(
-                              isDoublePageActive: true,
-                              singleFirst: singleFirst,
-                              pageCount: pages.length,
-                              pages: pages,
-                            ).actualToPageViewIndex(currentActual)
-                          : currentActual;
 
                       _currentIndex = targetIndex;
                       _currentPageViewIndex.value = targetIndex;
@@ -986,7 +936,7 @@ class _MangaChapterPageGalleryState
       secondRect = Rect.fromLTWH(halfWidth, 0, halfWidth, height);
     }
 
-    final page1 =
+    UChapDataPreload half(Rect srcRect) =>
         UChapDataPreload(
             page.chapter,
             page.directory,
@@ -996,27 +946,14 @@ class _MangaChapterPageGalleryState
             page.index,
             page.chapterUrlModel,
             page.pageIndex,
-            srcRect: firstRect,
+            srcRect: srcRect,
             localImagePath: page.localImagePath,
           )
           ..loadedWidth = halfWidth
           ..loadedHeight = height;
 
-    final page2 =
-        UChapDataPreload(
-            page.chapter,
-            page.directory,
-            page.pageUrl,
-            page.isLocale,
-            page.archiveImage,
-            page.index,
-            page.chapterUrlModel,
-            page.pageIndex,
-            srcRect: secondRect,
-            localImagePath: page.localImagePath,
-          )
-          ..loadedWidth = halfWidth
-          ..loadedHeight = height;
+    final page1 = half(firstRect);
+    final page2 = half(secondRect);
 
     setState(() {
       preloadManager.splitPage(index, page1, page2);
@@ -1709,38 +1646,33 @@ class _MangaChapterPageGalleryState
         p.index == pageInChapter,
   );
 
+  static PageMode _pageModeForOrientation(Orientation orientation) =>
+      orientation == Orientation.landscape
+      ? PageMode.doublePage
+      : PageMode.onePage;
+
+  /// Page mode implied by the device orientation (last known one if the
+  /// context is gone), or null when the orientation can't be determined.
+  PageMode? _autoPageMode() {
+    final orientation =
+        _lastOrientation ??
+        (mounted && context.mounted
+            ? MediaQuery.maybeOrientationOf(context)
+            : null);
+    return orientation == null ? null : _pageModeForOrientation(orientation);
+  }
+
   /// Effective [PageMode] accounting for automatic double-page orientation detection.
   PageMode get _effectivePageMode {
     final auto = ref.read(doublePageAutoStateProvider);
-    if (auto && mounted) {
-      final orientation =
-          _lastOrientation ??
-          (context.mounted ? MediaQuery.maybeOrientationOf(context) : null);
-      if (orientation != null) {
-        return orientation == Orientation.landscape
-            ? PageMode.doublePage
-            : PageMode.onePage;
-      }
-    }
+    if (auto && mounted) return _autoPageMode() ?? _pageMode;
     return _pageMode;
   }
 
   /// Safe version of [_effectivePageMode] for use during dispose.
   PageMode get _effectivePageModeSync {
     final auto = settingsRepository.current.doublePageAuto ?? false;
-    if (auto) {
-      final orientation =
-          _lastOrientation ??
-          (mounted && context.mounted
-              ? MediaQuery.maybeOrientationOf(context)
-              : null);
-      if (orientation != null) {
-        return orientation == Orientation.landscape
-            ? PageMode.doublePage
-            : PageMode.onePage;
-      }
-    }
-    return _pageMode;
+    return (auto ? _autoPageMode() : null) ?? _pageMode;
   }
 
   /// Whether double page mode is active (continuous or paged).
@@ -1766,6 +1698,19 @@ class _MangaChapterPageGalleryState
   /// Safe version that uses cached reader mode for use in dispose.
   int _pageViewToActualIndexSync(int pageViewIndex) =>
       _indexMathSync.pageViewToActualIndex(pageViewIndex);
+
+  /// Page view index that shows the page at [currentActual] once [mode] is
+  /// active. Unlike [_actualToPageViewIndex] this does not depend on the mode
+  /// currently in effect, so it can be used while switching modes.
+  int _pageViewIndexForMode(PageMode mode, int currentActual) =>
+      mode == PageMode.doublePage
+      ? ReaderPageIndexMath(
+          isDoublePageActive: true,
+          singleFirst: ref.read(doublePageSingleFirstPageStateProvider),
+          pageCount: pages.length,
+          pages: pages,
+        ).actualToPageViewIndex(currentActual)
+      : currentActual;
 
   /// Converts an actual [pages] array index to a page view index
   /// for double page mode.
