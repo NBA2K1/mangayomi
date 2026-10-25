@@ -1,14 +1,10 @@
-import 'dart:io';
-
-import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/settings/player/providers/player_state_provider.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:path/path.dart' as path;
+import 'package:mangayomi/utils/mpv_config.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 class PlayerAdvancedScreen extends ConsumerStatefulWidget {
@@ -69,10 +65,8 @@ class _PlayerAdvancedScreenState extends ConsumerState<PlayerAdvancedScreen> {
       return false;
     }
     final dir = await provider.getMpvDirectory();
-    final mpvFile = File('${dir!.path}/mpv.conf');
-    final inputFile = File('${dir.path}/input.conf');
-    final filesMissing =
-        !(await mpvFile.exists()) && !(await inputFile.exists());
+    if (dir == null) return false;
+    final filesMissing = await isMpvConfigMissing(dir);
     if ((redownload || filesMissing) && context.mounted) {
       final res = await showDialog(
         context: context,
@@ -90,36 +84,7 @@ class _PlayerAdvancedScreenState extends ConsumerState<PlayerAdvancedScreen> {
                   const SizedBox(width: 15),
                   ElevatedButton(
                     onPressed: () async {
-                      final bytes = await rootBundle.load(
-                        "assets/mangayomi_mpv.zip",
-                      );
-                      final archive = ZipDecoder().decodeBytes(
-                        bytes.buffer.asUint8List(),
-                      );
-                      String shadersDir = path.join(dir.path, 'shaders');
-                      await Directory(shadersDir).create(recursive: true);
-                      String scriptsDir = path.join(dir.path, 'scripts');
-                      await Directory(scriptsDir).create(recursive: true);
-                      for (final file in archive.files) {
-                        if (file.name == "mpv.conf") {
-                          await mpvFile.writeAsBytes(file.content);
-                        } else if (file.name == "input.conf") {
-                          await inputFile.writeAsBytes(file.content);
-                        } else if (file.name.startsWith("shaders/") &&
-                            file.name.endsWith(".glsl")) {
-                          final shaderFile = File(
-                            '$shadersDir/${file.name.split("/").last}',
-                          );
-                          await shaderFile.writeAsBytes(file.content);
-                        } else if (file.name.startsWith("scripts/") &&
-                            (file.name.endsWith(".js") ||
-                                file.name.endsWith(".lua"))) {
-                          final scriptFile = File(
-                            '$scriptsDir/${file.name.split("/").last}',
-                          );
-                          await scriptFile.writeAsBytes(file.content);
-                        }
-                      }
+                      await installMpvConfig(dir);
                       if (context.mounted) {
                         Navigator.pop(context, "ok");
                       }
