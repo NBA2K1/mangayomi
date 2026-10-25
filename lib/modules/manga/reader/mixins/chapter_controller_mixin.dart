@@ -44,7 +44,7 @@ mixin ChapterControllerMixin {
   Settings getIsarSetting() => settingsRepository.current;
 
   String getMangaName() => getManga().name!;
-  String getSourceName() => getManga().source!;
+  // String getSourceName() => getManga().source!;
   String getChapterTitle() => chapter.name!;
 
   // ---------------------------------------------------------------------------

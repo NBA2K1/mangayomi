@@ -331,6 +331,7 @@ class _MangaChapterPageGalleryState
   late final ValueNotifier<int?> _currentPageViewIndex = ValueNotifier(
     _currentIndex,
   );
+
   /// True while a chapter transition page is shown, so the page counters can
   /// hide instead of showing a number that belongs to no page.
   final ValueNotifier<bool> _isOnTransitionPage = ValueNotifier(false);
@@ -355,7 +356,6 @@ class _MangaChapterPageGalleryState
     });
   }
 
-  List<double> doubleTapScales = <double>[1.0, 2.0];
   final StreamController<double> _rebuildDetail =
       StreamController<double>.broadcast();
   @override
@@ -1584,7 +1584,6 @@ class _MangaChapterPageGalleryState
   late final _pageOffset = ValueNotifier(
     _readerController.autoScrollValues().$2,
   );
-
 
   void _autoPagescroll() {
     onAutoScrollChanged();

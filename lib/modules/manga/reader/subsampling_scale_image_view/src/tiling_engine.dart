@@ -94,16 +94,6 @@ class TilingEngine {
     }
   }
 
-  /// Determines if the base layer is completely loaded
-  bool isBaseLayerReady() {
-    final baseGrid = tileMap[fullImageSampleSize];
-    if (baseGrid == null || baseGrid.isEmpty) return false;
-    for (final tile in baseGrid) {
-      if (tile.image == null) return false;
-    }
-    return true;
-  }
-
   /// Disposes of all tiles
   void dispose() {
     for (final grid in tileMap.values) {

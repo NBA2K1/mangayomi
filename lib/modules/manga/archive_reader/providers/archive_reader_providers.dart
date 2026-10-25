@@ -465,10 +465,6 @@ LocalExtensionType _getArchiveType(String path) {
   return setTypeExtension(extension);
 }
 
-String getTypeExtension(LocalExtensionType type) {
-  return type.name;
-}
-
 LocalExtensionType setTypeExtension(String extension) {
   return switch (extension.toLowerCase()) {
     'cbt' => LocalExtensionType.cbt,
