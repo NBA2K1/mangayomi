@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:app_links/app_links.dart';
-import 'package:archive/archive.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
@@ -43,6 +42,7 @@ import 'package:mangayomi/utils/discord_rpc.dart';
 import 'package:mangayomi/services/crash_native.dart';
 import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/log/logger.dart';
+import 'package:mangayomi/utils/mpv_config.dart';
 import 'package:mangayomi/utils/client_id.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/url_protocol/api.dart';
@@ -54,9 +54,10 @@ import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter/services.dart' show rootBundle, LogicalKeyboardKey;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:mangayomi/utils/window_geometry.dart';
 import 'package:mangayomi/modules/more/settings/general/providers/memory_probe_provider.dart';
+import 'package:mangayomi/modules/more/settings/player/providers/player_state_provider.dart';
 import 'package:mangayomi/modules/widgets/memory_overlay.dart';
 import 'package:mangayomi/modules/widgets/app_ui_scale.dart';
 import 'package:mangayomi/modules/more/settings/appearance/providers/app_ui_scale_state_provider.dart';
@@ -728,40 +729,11 @@ class _MyAppState extends ConsumerState<MyApp>
   }
 
   Future<void> _setupMpvConfig() async {
+    if (!ref.read(useMpvConfigStateProvider)) return;
     try {
-      final provider = StorageProvider();
-      final dir = await provider.getMpvDirectory();
-      final mpvFile = File(p.join(dir!.path, 'mpv.conf'));
-      final inputFile = File(p.join(dir.path, 'input.conf'));
-      final filesMissing =
-          !(await mpvFile.exists()) && !(await inputFile.exists());
-      if (filesMissing) {
-        final bytes = await rootBundle.load("assets/mangayomi_mpv.zip");
-        final archive = ZipDecoder().decodeBytes(bytes.buffer.asUint8List());
-        final shadersDir = Directory(p.join(dir.path, 'shaders'));
-        final scriptsDir = Directory(p.join(dir.path, 'scripts'));
-        await Future.wait([
-          shadersDir.create(recursive: true),
-          scriptsDir.create(recursive: true),
-        ]);
-
-        final List<Future> writes = [];
-        for (final file in archive.files) {
-          final name = file.name;
-          if (name == "mpv.conf") {
-            writes.add(mpvFile.writeAsBytes(file.content));
-          } else if (name == "input.conf") {
-            writes.add(inputFile.writeAsBytes(file.content));
-          } else if (name.startsWith("shaders/") && name.endsWith(".glsl")) {
-            final shaderFile = File(p.join(shadersDir.path, p.basename(name)));
-            writes.add(shaderFile.writeAsBytes(file.content));
-          } else if (name.startsWith("scripts/") &&
-              (name.endsWith(".js") || name.endsWith(".lua"))) {
-            final scriptFile = File(p.join(scriptsDir.path, p.basename(name)));
-            writes.add(scriptFile.writeAsBytes(file.content));
-          }
-        }
-        await Future.wait(writes);
+      final dir = await StorageProvider().getMpvDirectory();
+      if (dir != null && await isMpvConfigMissing(dir)) {
+        await installMpvConfig(dir);
       }
     } catch (e) {
       // Best-effort: on Android the mpv config dir is in shared storage, which
