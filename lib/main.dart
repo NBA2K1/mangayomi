@@ -202,24 +202,6 @@ class _StartupErrorApp extends StatelessWidget {
   }
 }
 
-/// The tracker library cache moved from Hive to Isar. Remove the box Hive
-/// left behind, in the directory `Hive.initFlutter` used to open it.
-Future<void> _deleteLegacyHiveCache() async {
-  try {
-    final docs = await getApplicationDocumentsDirectory();
-    final dir = Platform.isAndroid
-        ? docs.path
-        : p.join(
-            docs.path,
-            isApple ? "databases" : p.join("Mangayomi", "databases"),
-          );
-    for (final name in ["tracker_library.hive", "tracker_library.lock"]) {
-      final file = File(p.join(dir, name));
-      if (await file.exists()) await file.delete();
-    }
-  } catch (_) {}
-}
-
 Future<void> _postLaunchInit(StorageProvider storage) async {
   await AppLogger.init();
   // Backfills clientId on rows saved before that field existed. Runs on every
@@ -229,7 +211,6 @@ Future<void> _postLaunchInit(StorageProvider storage) async {
   // Expensive worker isolates start lazily on first use instead of delaying
   // the first frame.
   DownloadIsolatePool.configure(poolSize: 6);
-  unawaited(_deleteLegacyHiveCache());
   if (isDesktop && !kDebugMode) {
     discordRpc = DiscordRPC(applicationId: "1395040506677039157");
     await discordRpc?.initialize();
