@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/source.dart';
-import 'package:mangayomi/modules/manga/detail/manga_details_view.dart';
+import 'package:mangayomi/modules/manga/detail/manga_detail_screen.dart';
 import 'package:mangayomi/modules/manga/detail/providers/update_manga_detail_providers.dart';
 import 'package:mangayomi/modules/manga/detail/providers/isar_providers.dart';
 import 'package:mangayomi/modules/widgets/error_text.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 
+/// loads the data and handles refresh
 class MangaReaderDetail extends ConsumerStatefulWidget {
   final int mangaId;
   const MangaReaderDetail({super.key, required this.mangaId});
@@ -48,8 +49,7 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
           if (manga == null) {
             return const ProgressCenter();
           }
-          final hasSourceInfo =
-              manga.lang != null && manga.source != null;
+          final hasSourceInfo = manga.lang != null && manga.source != null;
           return StreamBuilder<List<Source>>(
             initialData: hasSourceInfo
                 ? sourceRepository.getActiveByItemTypeLangName(
@@ -80,7 +80,7 @@ class _MangaReaderDetailState extends ConsumerState<MangaReaderDetail> {
                 },
                 child: Stack(
                   children: [
-                    MangaDetailsView(
+                    MangaDetailScreen(
                       manga: manga,
                       sourceExist: sourceExist,
                       checkForUpdate: (value) async {

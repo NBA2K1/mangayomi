@@ -20,11 +20,12 @@ import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
 
 enum _DuplicateLibraryAction { addAnyway, migrate }
 
-class MangaDetailsView extends ConsumerStatefulWidget {
+/// provides the Scaffold, floating button, library button and header
+class MangaDetailScreen extends ConsumerStatefulWidget {
   final Manga manga;
   final bool sourceExist;
   final Function(bool) checkForUpdate;
-  const MangaDetailsView({
+  const MangaDetailScreen({
     super.key,
     required this.sourceExist,
     required this.manga,
@@ -32,10 +33,10 @@ class MangaDetailsView extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MangaDetailsView> createState() => _MangaDetailsViewState();
+  ConsumerState<MangaDetailScreen> createState() => _MangaDetailScreenState();
 }
 
-class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
+class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> {
   /// "Add to library" entry point: checks whether this exact title is
   /// already favorited under a different source first, so the same manga
   /// can't end up as two separate library entries by accident. Only warns —
