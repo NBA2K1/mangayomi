@@ -113,8 +113,6 @@ void main(List<String> args) async {
       // Detect Android TV / leanback so the UI can branch on form factor.
       // No-op on other platforms. See #729.
       await initIsTv();
-      // Expensive worker isolates start lazily on first use instead of delaying
-      // the first frame.
       if (!isMobile) {
         await windowManager.ensureInitialized();
         await WindowGeometry.restore();
@@ -228,6 +226,8 @@ Future<void> _postLaunchInit(StorageProvider storage) async {
   // launch rather than gating on a version check - once caught up it's just
   // six empty indexed lookups, so there's no real cost to checking again.
   unawaited(backfillMissingClientIds());
+  // Expensive worker isolates start lazily on first use instead of delaying
+  // the first frame.
   DownloadIsolatePool.configure(poolSize: 6);
   unawaited(_deleteLegacyHiveCache());
   if (isDesktop && !kDebugMode) {
