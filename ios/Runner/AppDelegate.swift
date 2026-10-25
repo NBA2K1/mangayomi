@@ -48,6 +48,23 @@ import UniformTypeIdentifiers
     let cover = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
     cover.frame = window.bounds
     cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+    if let image = UIImage(named: "PrivacyIcon") {
+      let side: CGFloat = 120
+      let iconView = UIImageView(image: image)
+      iconView.contentMode = .scaleAspectFit
+      iconView.layer.cornerRadius = side * 0.2237 // iOS icon corner ratio
+      iconView.layer.cornerCurve = .continuous
+      iconView.clipsToBounds = true
+      iconView.frame = CGRect(x: 0, y: 0, width: side, height: side)
+      iconView.center = CGPoint(x: cover.bounds.midX, y: cover.bounds.midY)
+      iconView.autoresizingMask = [
+        .flexibleLeftMargin, .flexibleRightMargin,
+        .flexibleTopMargin, .flexibleBottomMargin,
+      ]
+      cover.contentView.addSubview(iconView)
+    }
+
     window.addSubview(cover)
     privacyCoverViews[key] = cover
   }
