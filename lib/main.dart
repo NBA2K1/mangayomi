@@ -37,7 +37,7 @@ import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/services/m_extension_server.dart';
-import 'package:mangayomi/services/download_manager/m_downloader.dart';
+import 'package:mangayomi/services/download_manager/download_isolate_pool.dart';
 import 'package:mangayomi/src/rust/frb_generated.dart';
 import 'package:mangayomi/utils/discord_rpc.dart';
 import 'package:mangayomi/services/crash_native.dart';
@@ -227,7 +227,7 @@ Future<void> _postLaunchInit(StorageProvider storage) async {
   // launch rather than gating on a version check - once caught up it's just
   // six empty indexed lookups, so there's no real cost to checking again.
   unawaited(backfillMissingClientIds());
-  unawaited(MDownloader.initializeIsolatePool(poolSize: 6));
+  DownloadIsolatePool.configure(poolSize: 6);
   unawaited(_deleteLegacyHiveCache());
   if (isDesktop && !kDebugMode) {
     discordRpc = DiscordRPC(applicationId: "1395040506677039157");
