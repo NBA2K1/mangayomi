@@ -39,18 +39,22 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
     _init();
   }
 
+  /// Notifier of the [trackStateProvider] for [track] (or none, for
+  /// [TrackState.setTrackSearch], which resolves the track itself).
+  TrackState _tracker(Track? track) => ref.read(
+    trackStateProvider(
+      track: track,
+      itemType: widget.itemType,
+      widgetRef: ref,
+    ).notifier,
+  );
+
+  TrackState get _track => _tracker(widget.trackRes);
+
   Future<void> _init() async {
     // Yield to microtask queue so initState completes before async work
     await Future(() {});
-    final findManga = await ref
-        .read(
-          trackStateProvider(
-            track: widget.trackRes,
-            itemType: widget.itemType,
-            widgetRef: ref,
-          ).notifier,
-        )
-        .findManga();
+    final findManga = await _track.findManga();
     if (mounted) {
       ref
           .read(tracksProvider(syncId: widget.syncId).notifier)
@@ -60,7 +64,7 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = l10nLocalizations(context);
+    final l10n = l10nLocalizations(context)!;
     final l10nLocale = ref.watch(l10nLocaleStateProvider);
     return Container(
       decoration: BoxDecoration(
@@ -107,19 +111,11 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
                             track: widget.trackRes,
                           ) as TrackSearch?;
                           if (trackSearch != null) {
-                            await ref
-                                .read(
-                                  trackStateProvider(
-                                    track: null,
-                                    itemType: widget.itemType,
-                                    widgetRef: ref,
-                                  ).notifier,
-                                )
-                                .setTrackSearch(
-                                  trackSearch,
-                                  widget.mangaId,
-                                  widget.syncId,
-                                );
+                            await _tracker(null).setTrackSearch(
+                              trackSearch,
+                              widget.mangaId,
+                              widget.syncId,
+                            );
                           }
                         }
                       : null,
@@ -164,93 +160,7 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
               Expanded(
                 child: _elevatedButton(
                   context,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text(l10n!.status),
-                          content: SizedBox(
-                            width: context.width(0.8),
-                            child: RadioGroup(
-                              groupValue: toTrackStatus(
-                                widget.trackRes.status,
-                                widget.itemType,
-                                widget.trackRes.syncId!,
-                              ),
-                              onChanged: (value) {
-                                // Individual RadioListTile will handle the change
-                              },
-                              child: SuperListView.builder(
-                                shrinkWrap: true,
-                                itemCount: ref
-                                    .read(
-                                      trackStateProvider(
-                                        track: widget.trackRes,
-                                        itemType: widget.itemType,
-                                        widgetRef: ref,
-                                      ).notifier,
-                                    )
-                                    .getStatusList()
-                                    .length,
-                                itemBuilder: (context, index) {
-                                  final status = ref
-                                      .read(
-                                        trackStateProvider(
-                                          track: widget.trackRes,
-                                          itemType: widget.itemType,
-                                          widgetRef: ref,
-                                        ).notifier,
-                                      )
-                                      .getStatusList()[index];
-                                  return RadioListTile(
-                                    dense: true,
-                                    contentPadding: const EdgeInsets.all(0),
-                                    value: status,
-                                    // ignore: deprecated_member_use
-                                    onChanged: (value) {
-                                      ref
-                                          .read(
-                                            trackStateProvider(
-                                              track: widget.trackRes
-                                                ..status = status,
-                                              itemType: widget.itemType,
-                                              widgetRef: ref,
-                                            ).notifier,
-                                          )
-                                          .updateManga();
-                                      Navigator.pop(context);
-                                    },
-                                    title: Text(
-                                      getTrackStatus(status, context),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.cancel,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () => _showStatusDialog(context),
                   text: getTrackStatus(
                     toTrackStatus(
                       widget.trackRes.status,
@@ -264,197 +174,39 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
               Expanded(
                 child: _elevatedButton(
                   context,
-                  onPressed: () {
-                    int currentIntValue = widget.trackRes.lastChapterRead!;
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text(
-                            widget.itemType == ItemType.manga
-                                ? l10n!.chapters
-                                : l10n!.episodes,
-                          ),
-                          content: StatefulBuilder(
-                            builder: (context, setState) => SizedBox(
-                              height: 200,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  NumberPicker(
-                                    value: currentIntValue,
-                                    minValue: 0,
-                                    maxValue: widget.trackRes.totalChapter != 0
-                                        ? widget.trackRes.totalChapter!
-                                        : 10000,
-                                    step: 1,
-                                    haptics: true,
-                                    onChanged: (value) =>
-                                        setState(() => currentIntValue = value),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.cancel,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes
-                                              ..lastChapterRead =
-                                                  currentIntValue,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .updateManga();
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.ok,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () => _showNumberPickerDialog(
+                    context,
+                    title: widget.itemType == ItemType.manga
+                        ? l10n.chapters
+                        : l10n.episodes,
+                    initialValue: widget.trackRes.lastChapterRead!,
+                    maxValue: widget.trackRes.totalChapter != 0
+                        ? widget.trackRes.totalChapter!
+                        : 10000,
+                    onConfirm: (value) =>
+                        widget.trackRes.lastChapterRead = value,
+                  ),
                   text: widget.trackRes.totalChapter != 0
                       ? "${widget.trackRes.lastChapterRead}/${widget.trackRes.totalChapter}"
-                      : "${widget.trackRes.lastChapterRead == 0 ? l10n!.not_started : widget.trackRes.lastChapterRead}",
+                      : "${widget.trackRes.lastChapterRead == 0 ? l10n.not_started : widget.trackRes.lastChapterRead}",
                 ),
               ),
               Expanded(
                 child: _elevatedButton(
                   context,
-                  onPressed: () {
-                    int currentIntValue = widget.trackRes.score!;
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text(l10n!.score),
-                          content: StatefulBuilder(
-                            builder: (context, setState) => SizedBox(
-                              height: 200,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  NumberPicker(
-                                    value: currentIntValue,
-                                    minValue: 0,
-                                    maxValue: ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .getScoreMaxValue(),
-                                    textMapper: (numberText) {
-                                      return ref
-                                          .read(
-                                            trackStateProvider(
-                                              track: widget.trackRes,
-                                              itemType: widget.itemType,
-                                              widgetRef: ref,
-                                            ).notifier,
-                                          )
-                                          .getTextMapper(numberText);
-                                    },
-                                    step: ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .getScoreStep(),
-                                    haptics: true,
-                                    onChanged: (value) =>
-                                        setState(() => currentIntValue = value),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.cancel,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    ref
-                                        .read(
-                                          trackStateProvider(
-                                            track: widget.trackRes
-                                              ..score = currentIntValue,
-                                            itemType: widget.itemType,
-                                            widgetRef: ref,
-                                          ).notifier,
-                                        )
-                                        .updateManga();
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    l10n.ok,
-                                    style: TextStyle(
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () => _showNumberPickerDialog(
+                    context,
+                    title: l10n.score,
+                    initialValue: widget.trackRes.score!,
+                    maxValue: _track.getScoreMaxValue(),
+                    step: _track.getScoreStep(),
+                    textMapper: (numberText) =>
+                        _track.getTextMapper(numberText),
+                    onConfirm: (value) => widget.trackRes.score = value,
+                  ),
                   text: widget.trackRes.score != 0
-                      ? ref
-                            .read(
-                              trackStateProvider(
-                                track: widget.trackRes,
-                                itemType: widget.itemType,
-                                widgetRef: ref,
-                              ).notifier,
-                            )
-                            .displayScore(widget.trackRes.score!)
-                      : l10n!.score,
+                      ? _track.displayScore(widget.trackRes.score!)
+                      : l10n.score,
                 ),
               ),
             ],
@@ -467,39 +219,15 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                   ),
-                  onPressed: () async {
-                    DateTime? newDate = await showDatePicker(
-                      helpText: l10n!.start_date,
-                      locale: l10nLocale,
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime(2100),
-                    );
-                    if (newDate == null) return;
-                    ref
-                        .read(
-                          trackStateProvider(
-                            track: widget.trackRes
-                              ..startedReadingDate =
-                                  newDate.millisecondsSinceEpoch,
-                            itemType: widget.itemType,
-                            widgetRef: ref,
-                          ).notifier,
-                        )
-                        .updateManga();
-                  },
-                  text:
-                      widget.trackRes.startedReadingDate != null &&
-                          widget.trackRes.startedReadingDate! >
-                              DateTime.utc(1970).millisecondsSinceEpoch
-                      ? dateFormat(
-                          widget.trackRes.startedReadingDate.toString(),
-                          ref: ref,
-                          useRelativeTimesTamps: false,
-                          context: context,
-                        )
-                      : l10n!.start_date,
+                  onPressed: () => _pickDate(
+                    l10n.start_date,
+                    l10nLocale,
+                    (millis) => widget.trackRes.startedReadingDate = millis,
+                  ),
+                  text: _dateText(
+                    widget.trackRes.startedReadingDate,
+                    l10n.start_date,
+                  ),
                 ),
               ),
               Expanded(
@@ -508,45 +236,172 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
                   borderRadius: const BorderRadius.only(
                     bottomRight: Radius.circular(20),
                   ),
-                  onPressed: () async {
-                    DateTime? newDate = await showDatePicker(
-                      helpText: l10n!.finish_date,
-                      locale: l10nLocale,
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime(2100),
-                    );
-                    if (newDate == null) return;
-                    ref
-                        .read(
-                          trackStateProvider(
-                            track: widget.trackRes
-                              ..finishedReadingDate =
-                                  newDate.millisecondsSinceEpoch,
-                            itemType: widget.itemType,
-                            widgetRef: ref,
-                          ).notifier,
-                        )
-                        .updateManga();
-                  },
-                  text:
-                      widget.trackRes.finishedReadingDate != null &&
-                          widget.trackRes.finishedReadingDate! >
-                              DateTime.utc(1970).millisecondsSinceEpoch
-                      ? dateFormat(
-                          widget.trackRes.finishedReadingDate.toString(),
-                          ref: ref,
-                          useRelativeTimesTamps: false,
-                          context: context,
-                        )
-                      : l10n!.finish_date,
+                  onPressed: () => _pickDate(
+                    l10n.finish_date,
+                    l10nLocale,
+                    (millis) => widget.trackRes.finishedReadingDate = millis,
+                  ),
+                  text: _dateText(
+                    widget.trackRes.finishedReadingDate,
+                    l10n.finish_date,
+                  ),
                 ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  /// Formats a stored track date, or returns [fallback] when it is unset.
+  String _dateText(int? date, String fallback) {
+    if (date != null && date > DateTime.utc(1970).millisecondsSinceEpoch) {
+      return dateFormat(
+        date.toString(),
+        ref: ref,
+        useRelativeTimesTamps: false,
+        context: context,
+      );
+    }
+    return fallback;
+  }
+
+  /// Asks for a date and, if one is chosen, stores it through [apply] and
+  /// syncs the track.
+  Future<void> _pickDate(
+    String helpText,
+    Locale locale,
+    void Function(int millis) apply,
+  ) async {
+    final newDate = await showDatePicker(
+      helpText: helpText,
+      locale: locale,
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+    if (newDate == null) return;
+    apply(newDate.millisecondsSinceEpoch);
+    _track.updateManga();
+  }
+
+  /// Cancel button, plus an OK button when [onOk] is given. [onOk] runs before
+  /// the dialog is closed.
+  Widget _dialogActions(BuildContext context, {VoidCallback? onOk}) {
+    final l10n = l10nLocalizations(context)!;
+    Widget button(String label, VoidCallback onPressed) => TextButton(
+      onPressed: onPressed,
+      child: Text(label, style: TextStyle(color: context.primaryColor)),
+    );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        button(l10n.cancel, () => Navigator.pop(context)),
+        if (onOk != null)
+          button(l10n.ok, () {
+            onOk();
+            Navigator.pop(context);
+          }),
+      ],
+    );
+  }
+
+  void _showStatusDialog(BuildContext context) {
+    final l10n = l10nLocalizations(context)!;
+    showDialog(
+      context: context,
+      builder: (context) {
+        final statusList = _track.getStatusList();
+        return AlertDialog(
+          title: Text(l10n.status),
+          content: SizedBox(
+            width: context.width(0.8),
+            child: RadioGroup(
+              groupValue: toTrackStatus(
+                widget.trackRes.status,
+                widget.itemType,
+                widget.trackRes.syncId!,
+              ),
+              onChanged: (value) {
+                // Individual RadioListTile will handle the change
+              },
+              child: SuperListView.builder(
+                shrinkWrap: true,
+                itemCount: statusList.length,
+                itemBuilder: (context, index) {
+                  final status = statusList[index];
+                  return RadioListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.all(0),
+                    value: status,
+                    // ignore: deprecated_member_use
+                    onChanged: (value) {
+                      _tracker(widget.trackRes..status = status).updateManga();
+                      Navigator.pop(context);
+                    },
+                    title: Text(getTrackStatus(status, context)),
+                  );
+                },
+              ),
+            ),
+          ),
+          actions: [_dialogActions(context)],
+        );
+      },
+    );
+  }
+
+  /// Number picker dialog shared by the chapter/episode and score buttons.
+  /// [onConfirm] must store the picked value on [Track]; the track is then
+  /// synced.
+  void _showNumberPickerDialog(
+    BuildContext context, {
+    required String title,
+    required int initialValue,
+    required int maxValue,
+    required void Function(int value) onConfirm,
+    int step = 1,
+    String Function(String numberText)? textMapper,
+  }) {
+    int currentIntValue = initialValue;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: StatefulBuilder(
+            builder: (context, setState) => SizedBox(
+              height: 200,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  NumberPicker(
+                    value: currentIntValue,
+                    minValue: 0,
+                    maxValue: maxValue,
+                    textMapper: textMapper,
+                    step: step,
+                    haptics: true,
+                    onChanged: (value) =>
+                        setState(() => currentIntValue = value),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            _dialogActions(
+              context,
+              onOk: () {
+                onConfirm(currentIntValue);
+                _track.updateManga();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
