@@ -324,6 +324,9 @@ class _MyAppState extends ConsumerState<MyApp>
       if (lockEnabled) {
         ref.read(appUnlockedStateProvider.notifier).lock();
       }
+      PaintingBinding.instance.imageCache
+        ..clear()
+        ..clearLiveImages();
     } else if (state == AppLifecycleState.resumed) {
       // Launch is the other trigger for the scheduled refresh, so without this
       // a session that stays open for days - a desktop one, typically - would
