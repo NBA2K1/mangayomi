@@ -152,23 +152,6 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     if (context.mounted) Navigator.pop(context);
   }
 
-  Size measureText(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    return textPainter.size;
-  }
-
-  double calculateDynamicButtonWidth(
-    String text,
-    TextStyle textStyle,
-    double padding,
-  ) {
-    final textSize = measureText(text, textStyle);
-    return textSize.width + padding;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = l10nLocalizations(context)!;
