@@ -11,7 +11,8 @@ class AppLockScreen extends ConsumerStatefulWidget {
   ConsumerState<AppLockScreen> createState() => _AppLockScreenState();
 }
 
-class _AppLockScreenState extends ConsumerState<AppLockScreen> {
+class _AppLockScreenState extends ConsumerState<AppLockScreen>
+    with WidgetsBindingObserver {
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _isAuthenticating = false;
   late final l10n = context.l10n;
@@ -19,7 +20,19 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _authenticate());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _authenticate();
   }
 
   Future<void> _authenticate() async {
