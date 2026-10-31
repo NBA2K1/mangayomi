@@ -29631,6 +29631,7 @@ const ChapterPageIndexSchema = Schema(
       type: IsarType.long,
     ),
     r'index': PropertySchema(id: 1, name: r'index', type: IsarType.long),
+    r'offset': PropertySchema(id: 2, name: r'offset', type: IsarType.double),
   },
 
   estimateSize: _chapterPageIndexEstimateSize,
@@ -29656,6 +29657,7 @@ void _chapterPageIndexSerialize(
 ) {
   writer.writeLong(offsets[0], object.chapterId);
   writer.writeLong(offsets[1], object.index);
+  writer.writeDouble(offsets[2], object.offset);
 }
 
 ChapterPageIndex _chapterPageIndexDeserialize(
@@ -29667,6 +29669,7 @@ ChapterPageIndex _chapterPageIndexDeserialize(
   final object = ChapterPageIndex(
     chapterId: reader.readLongOrNull(offsets[0]),
     index: reader.readLongOrNull(offsets[1]),
+    offset: reader.readDoubleOrNull(offsets[2]),
   );
   return object;
 }
@@ -29682,6 +29685,8 @@ P _chapterPageIndexDeserializeProp<P>(
       return (reader.readLongOrNull(offset)) as P;
     case 1:
       return (reader.readLongOrNull(offset)) as P;
+    case 2:
+      return (reader.readDoubleOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -29830,6 +29835,99 @@ extension ChapterPageIndexQueryFilter
           includeLower: includeLower,
           upper: upper,
           includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ChapterPageIndex, ChapterPageIndex, QAfterFilterCondition>
+  offsetIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'offset'),
+      );
+    });
+  }
+
+  QueryBuilder<ChapterPageIndex, ChapterPageIndex, QAfterFilterCondition>
+  offsetIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'offset'),
+      );
+    });
+  }
+
+  QueryBuilder<ChapterPageIndex, ChapterPageIndex, QAfterFilterCondition>
+  offsetEqualTo(double? value, {double epsilon = Query.epsilon}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'offset',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ChapterPageIndex, ChapterPageIndex, QAfterFilterCondition>
+  offsetGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'offset',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ChapterPageIndex, ChapterPageIndex, QAfterFilterCondition>
+  offsetLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'offset',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ChapterPageIndex, ChapterPageIndex, QAfterFilterCondition>
+  offsetBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'offset',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
         ),
       );
     });
