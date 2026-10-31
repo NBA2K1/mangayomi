@@ -74,7 +74,6 @@ class ReaderController extends _$ReaderController
   }
 
   void setReaderMode(ReaderMode newReaderMode) {
-    _cachedIsContinuousLike = null;
     List<PersonalReaderMode>? personalReaderModeLists = [];
     for (var personalReaderMode
         in getIsarSetting().personalReaderModeList ?? []) {
@@ -102,11 +101,6 @@ class ReaderController extends _$ReaderController
     return _cachedPageLength ??= getPageLength(fallback);
   }
 
-  bool? _cachedIsContinuousLike;
-  bool getCachedIsContinuousLike() {
-    return _cachedIsContinuousLike ??= getReaderMode().isVerticalContinuous;
-  }
-
   int getPageIndex() {
     if (incognitoMode) return 0;
     final chapterPageIndexList = getIsarSetting().chapterPageIndexList ?? [];
@@ -129,15 +123,16 @@ class ReaderController extends _$ReaderController
     int newIndex,
     bool save, [
     List pageUrlsFallback = const [],
+    int? lastVisibleIndex,
   ]) {
     if (chapter.isRead! || incognitoMode) return;
     final pageLength = getCachedPageLength(pageUrlsFallback);
     if (pageLength == 0 || (!save && newIndex == _lastSavedIndex)) return;
     _lastSavedIndex = newIndex;
-    final isContinuousLike = getCachedIsContinuousLike();
-    final isRead = isContinuousLike
-        ? (newIndex + 2) >= pageLength - 1
-        : (newIndex + 2) >= pageLength;
+    // Read once the last page has been reached. [lastVisibleIndex] is the
+    // last page shown together with [newIndex] (the second page of a double
+    // page spread).
+    final isRead = (lastVisibleIndex ?? newIndex) >= pageLength - 1;
     if (isRead || save) {
       void executeSave() {
         if (chapter.isRead! || incognitoMode) return;

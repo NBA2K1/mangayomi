@@ -192,6 +192,19 @@ class ReaderPageIndexMath {
     return s[clampedPv].firstIndex;
   }
 
+  /// Last actual index shown together with [actualIndex]: the second page of a
+  /// double page spread, otherwise [actualIndex] itself.
+  int lastActualIndexInSpread(int actualIndex) {
+    if (!isDoublePageActive) return actualIndex;
+    for (final spread in spreads) {
+      if (spread.firstIndex == actualIndex ||
+          spread.secondIndex == actualIndex) {
+        return spread.secondIndex ?? spread.firstIndex;
+      }
+    }
+    return actualIndex;
+  }
+
   /// Converts an actual pages-array index to a page-view index.
   int actualToPageViewIndex(int actualIndex) {
     if (!isDoublePageActive) return actualIndex;

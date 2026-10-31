@@ -1513,7 +1513,13 @@ class _MangaChapterPageGalleryState
     if (_currentPageDisplayIndex.value != idx) {
       _currentPageDisplayIndex.value = idx;
       _updateHasCurrentError();
-      _readerController.setPageIndex(idx, false, _chapterUrlModel.pageUrls);
+      final lastActual = _indexMath.lastActualIndexInSpread(actualIndex);
+      _readerController.setPageIndex(
+        idx,
+        false,
+        _chapterUrlModel.pageUrls,
+        lastActual < pages.length ? pages[lastActual].index : null,
+      );
       ref.read(currentIndexProvider(chapter).notifier).setCurrentIndex(idx);
     }
   }
