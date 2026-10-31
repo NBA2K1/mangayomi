@@ -1436,13 +1436,23 @@ class ChapterPageIndex {
   int? chapterId;
   int? index;
 
-  ChapterPageIndex({this.chapterId, this.index});
+  /// Share (0-1) of the page at [index] that was already scrolled past.
+  /// Only set in continuous reader modes, so a tall image can be resumed
+  /// partway through.
+  double? offset;
+
+  ChapterPageIndex({this.chapterId, this.index, this.offset});
   ChapterPageIndex.fromJson(Map<String, dynamic> json) {
     chapterId = json['chapterId'];
     index = json['index'];
+    offset = (json['offset'] as num?)?.toDouble();
   }
 
-  Map<String, dynamic> toJson() => {'chapterId': chapterId, 'index': index};
+  Map<String, dynamic> toJson() => {
+    'chapterId': chapterId,
+    'index': index,
+    'offset': offset,
+  };
 }
 
 @embedded

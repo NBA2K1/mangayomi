@@ -114,6 +114,16 @@ class ReaderController extends _$ReaderController
         : 0;
   }
 
+  /// Share (0-1) of the saved page that was already scrolled past.
+  double getPageOffset() {
+    if (incognitoMode || chapter.isRead!) return 0;
+    final saved = (getIsarSetting().chapterPageIndexList ?? []).where(
+      (element) => element.chapterId == chapter.id,
+    );
+    if (saved.isEmpty) return 0;
+    return (saved.first.offset ?? 0).clamp(0.0, 1.0).toDouble();
+  }
+
   int getPageLength(List pages) {
     return pages.length;
   }
@@ -124,6 +134,7 @@ class ReaderController extends _$ReaderController
     bool save, [
     List pageUrlsFallback = const [],
     int? lastVisibleIndex,
+    double? offset,
   ]) {
     if (chapter.isRead! || incognitoMode) return;
     final pageLength = getCachedPageLength(pageUrlsFallback);
@@ -140,15 +151,17 @@ class ReaderController extends _$ReaderController
         for (var chapterPageIndex
             in getIsarSetting().chapterPageIndexList ?? []) {
           if (chapterPageIndex.chapterId != chapter.id &&
-              (chapterPageIndex.index ?? 0) > 0) {
+              ((chapterPageIndex.index ?? 0) > 0 ||
+                  (chapterPageIndex.offset ?? 0) > 0)) {
             chapterPageIndexs.add(chapterPageIndex);
           }
         }
-        if (!isRead && newIndex > 0) {
+        if (!isRead && (newIndex > 0 || (offset ?? 0) > 0)) {
           chapterPageIndexs.add(
             ChapterPageIndex()
               ..chapterId = chapter.id
-              ..index = newIndex,
+              ..index = newIndex
+              ..offset = offset,
           );
         }
         if (!ref.mounted) return;

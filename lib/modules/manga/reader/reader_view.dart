@@ -261,7 +261,13 @@ class _MangaChapterPageGalleryState
     if (actualIndex < 0 || actualIndex >= pages.length) return;
     final index = pages[actualIndex].index;
     if (index != null) {
-      _readerController.setPageIndex(index, true, _chapterUrlModel.pageUrls);
+      _readerController.setPageIndex(
+        index,
+        true,
+        _chapterUrlModel.pageUrls,
+        null,
+        _cachedReaderMode.isContinuous ? _continuousPageOffset : null,
+      );
     }
   }
 
@@ -321,6 +327,18 @@ class _MangaChapterPageGalleryState
     max(0, widget.chapterUrlModel.uChapDataPreload.length - 1),
   );
 
+  /// The saved share (0-1) of [_savedPageIndex] already scrolled past. Ignored
+  /// when the saved index was clamped, since it then refers to another page.
+  late final double _savedPageOffset =
+      _readerController.getPageIndex() == _savedPageIndex
+      ? _readerController.getPageOffset()
+      : 0.0;
+
+  /// Share (0-1) of the first visible item already scrolled past, kept up to
+  /// date while scrolling because the list controller is gone by the time the
+  /// reader is disposed and the position is saved.
+  late double? _continuousPageOffset = _savedPageOffset;
+
   late int? _currentIndex = () {
     final saved = _savedPageIndex;
     if (_isDoublePageActiveSync) {
@@ -364,7 +382,8 @@ class _MangaChapterPageGalleryState
     _readingStopwatch.start();
 
     final saved = _savedPageIndex;
-    if (saved > 0 && _cachedReaderMode.isContinuous) {
+    if ((saved > 0 || _savedPageOffset > 0) &&
+        _cachedReaderMode.isContinuous) {
       _initialContinuousJumpPending = true;
       _initialContinuousTargetIndex = _currentIndex;
     }
@@ -1073,13 +1092,9 @@ class _MangaChapterPageGalleryState
     _currentIndex = newIndex;
     _currentPageViewIndex.value = newIndex;
     if (pageChanged) _triggerFlash();
-    final currentReaderMode = ref.read(_currentReaderMode);
-    int pagesLength =
-        (_effectivePageMode == PageMode.doublePage &&
-            !(currentReaderMode?.isHorizontalContinuous ?? false))
-        ? _pageViewPageCount
-        : pages.length;
+    final pagesLength = _continuousItemCount;
     if (_currentIndex! >= 0 && _currentIndex! < pagesLength) {
+      _continuousPageOffset = _scrolledShareOfItem(newIndex);
       final actualIndex = _pageViewToActualIndex(_currentIndex!);
       _updateChapterIfNeeded(actualIndex);
 
@@ -1110,6 +1125,48 @@ class _MangaChapterPageGalleryState
     }
   }
 
+  /// Scrolls to the saved reading position: the top of [targetIndex] plus
+  /// the saved share of that item. Called again whenever an image loads while
+  /// the position is still pending, because the item heights change then.
+  void _jumpToSavedPosition(int targetIndex) {
+    _listController.jumpToItem(
+      index: targetIndex,
+      scrollController: _continuousScrollController,
+      alignment: 0.0,
+    );
+    final share = _savedPageOffset;
+    if (share <= 0 || targetIndex + 1 >= _continuousItemCount) return;
+    // ignore: invalid_use_of_visible_for_testing_member
+    final top = _listController.getOffsetToReveal(targetIndex, 0.0);
+    // ignore: invalid_use_of_visible_for_testing_member
+    final bottom = _listController.getOffsetToReveal(targetIndex + 1, 0.0);
+    if (!top.isFinite || !bottom.isFinite || bottom <= top) return;
+    final position = _continuousScrollController.position;
+    position.jumpTo(
+      (top + (bottom - top) * share).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      ),
+    );
+  }
+
+  /// Share (0-1) of the item at [index] that is scrolled past the start of the
+  /// viewport, or null if it can't be determined.
+  double? _scrolledShareOfItem(int index) {
+    if (!_listController.isAttached ||
+        !_continuousScrollController.hasClients ||
+        index + 1 >= _continuousItemCount) {
+      return null;
+    }
+    // ignore: invalid_use_of_visible_for_testing_member
+    final top = _listController.getOffsetToReveal(index, 0.0);
+    // ignore: invalid_use_of_visible_for_testing_member
+    final bottom = _listController.getOffsetToReveal(index + 1, 0.0);
+    if (!top.isFinite || !bottom.isFinite || bottom <= top) return null;
+    return ((_continuousScrollController.offset - top) / (bottom - top))
+        .clamp(0.0, 1.0);
+  }
+
   void _onContinuousPageImageLoaded(int index) {
     if (!_initialContinuousJumpPending ||
         !_cachedReaderMode.isContinuous ||
@@ -1125,11 +1182,7 @@ class _MangaChapterPageGalleryState
           !_continuousScrollController.hasClients) {
         return;
       }
-      _listController.jumpToItem(
-        index: targetIndex,
-        scrollController: _continuousScrollController,
-        alignment: 0.0,
-      );
+      _jumpToSavedPosition(targetIndex);
     });
   }
 
@@ -1765,6 +1818,13 @@ class _MangaChapterPageGalleryState
   /// Total page count as seen by the page view controller.
   /// In double page mode, each PV page shows 2 actual pages (except PV 0 if singleFirst).
   int get _pageViewPageCount => _indexMath.pageViewPageCount;
+
+  /// Number of items in the continuous list.
+  int get _continuousItemCount =>
+      (_effectivePageMode == PageMode.doublePage &&
+          !(ref.read(_currentReaderMode)?.isHorizontalContinuous ?? false))
+      ? _pageViewPageCount
+      : pages.length;
 
   bool _isContinuousMode([ReaderMode? mode]) {
     final readerMode = mode ?? ref.read(_currentReaderMode);
