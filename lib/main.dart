@@ -254,6 +254,7 @@ class _MyAppState extends ConsumerState<MyApp>
     WidgetsBinding.instance.addObserver(this);
     if (!isMobile) windowManager.addListener(this);
     initializeDateFormatting();
+    syncAppLockPrivacyScreen(ref.read(appLockEnabledStateProvider));
     customDns = ref.read(customDnsStateProvider);
     _initDeepLinks();
     _setupMpvConfig();

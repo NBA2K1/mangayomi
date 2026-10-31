@@ -11,11 +11,67 @@ import UniformTypeIdentifiers
   private var localDirectoryPickerResult: FlutterResult?
   private weak var localDirectoryPickerController: UIDocumentPickerViewController?
   private var activeSecurityScopedUrls: [String: URL] = [:]
+  // Set from Dart (see syncAppLockPrivacyScreen) whenever "App lock" changes.
+  private var appLockPrivacyEnabled = false
+  // One cover per window scene, keyed by the scene.
+  private var privacyCoverViews: [ObjectIdentifier: UIView] = [:]
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // iOS takes the app switcher snapshot as soon as the scene resigns active,
+    // which is before Flutter reports paused/hidden and long before it could
+    // draw a Flutter lock screen. The cover therefore has to be a native view
+    // added synchronously here.
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(sceneWillDeactivate(_:)),
+      name: UIScene.willDeactivateNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(sceneDidActivate(_:)),
+      name: UIScene.didActivateNotification,
+      object: nil
+    )
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  @objc private func sceneWillDeactivate(_ notification: Notification) {
+    guard appLockPrivacyEnabled,
+          let scene = notification.object as? UIWindowScene else { return }
+    let key = ObjectIdentifier(scene)
+    guard privacyCoverViews[key] == nil,
+          let window = scene.windows.first(where: \.isKeyWindow) ?? scene.windows.first
+    else { return }
+    let cover = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
+    cover.frame = window.bounds
+    cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+    if let image = UIImage(named: "PrivacyIcon") {
+      let side: CGFloat = 120
+      let iconView = UIImageView(image: image)
+      iconView.contentMode = .scaleAspectFit
+      iconView.layer.cornerRadius = side * 0.2237 // iOS icon corner ratio
+      iconView.layer.cornerCurve = .continuous
+      iconView.clipsToBounds = true
+      iconView.frame = CGRect(x: 0, y: 0, width: side, height: side)
+      iconView.center = CGPoint(x: cover.bounds.midX, y: cover.bounds.midY)
+      iconView.autoresizingMask = [
+        .flexibleLeftMargin, .flexibleRightMargin,
+        .flexibleTopMargin, .flexibleBottomMargin,
+      ]
+      cover.contentView.addSubview(iconView)
+    }
+
+    window.addSubview(cover)
+    privacyCoverViews[key] = cover
+  }
+
+  @objc private func sceneDidActivate(_ notification: Notification) {
+    guard let scene = notification.object as? UIWindowScene else { return }
+    privacyCoverViews.removeValue(forKey: ObjectIdentifier(scene))?.removeFromSuperview()
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
@@ -76,6 +132,21 @@ import UniformTypeIdentifiers
           return
         }
         UIApplication.shared.endBackgroundTask(task)
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    })
+
+    let appLockChannel = FlutterMethodChannel(
+      name: "com.kodjodevf.mangayomi.app_lock",
+      binaryMessenger: messenger
+    )
+    appLockChannel.setMethodCallHandler({
+      [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+      switch call.method {
+      case "setPrivacyScreen":
+        self?.appLockPrivacyEnabled = (call.arguments as? Bool) ?? false
         result(nil)
       default:
         result(FlutterMethodNotImplemented)
