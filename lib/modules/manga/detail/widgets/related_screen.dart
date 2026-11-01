@@ -8,18 +8,10 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/related_titles.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
+import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
-
-/// Covers are 2:3, matching the recommendation screen so the two read as one
-/// kind of list rather than two.
-const double _coverWidth = 96;
-const double _coverHeight = 144;
-
-const double _alphaTint = 0.08;
-const double _alphaFocus = 0.14;
-const double _alphaSecondary = 0.70;
 
 /// What the open title is related to.
 ///
@@ -125,7 +117,7 @@ class _RelatedScreenState extends State<RelatedScreen> {
         // Nothing is focusable on entry otherwise, so a remote does nothing
         // until the user guesses a direction.
         autofocus: isTv && index == 0,
-        focusColor: context.primaryColor.withValues(alpha: _alphaFocus),
+        focusColor: context.primaryColor.withValues(alpha: Alphas.focus),
         onTap: () => context.push(
           '/globalSearch',
           extra: (related.title, related.itemType),
@@ -142,8 +134,8 @@ class _RelatedScreenState extends State<RelatedScreen> {
                   // a missing cover leaves a gap of the right shape instead of
                   // collapsing the row.
                   image: coverProvider(toImgUrl(related.coverImage ?? "")),
-                  width: _coverWidth,
-                  height: _coverHeight,
+                  width: listCoverWidth,
+                  height: listCoverHeight,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -220,7 +212,7 @@ class _RelatedScreenState extends State<RelatedScreen> {
       decoration: BoxDecoration(
         color: filled
             ? accent
-            : context.textColor.withValues(alpha: _alphaTint),
+            : context.textColor.withValues(alpha: Alphas.tint),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -230,7 +222,7 @@ class _RelatedScreenState extends State<RelatedScreen> {
           fontWeight: bold ? FontWeight.w800 : FontWeight.w400,
           color: filled
               ? onAccent
-              : context.textColor.withValues(alpha: _alphaSecondary),
+              : context.textColor.withValues(alpha: Alphas.secondary),
         ),
       ),
     );

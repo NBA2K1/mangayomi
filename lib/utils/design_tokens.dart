@@ -49,6 +49,12 @@ abstract final class Alphas {
 /// fit whatever arrived.
 const double coverAspect = 2 / 3;
 
+/// Cover size in the list-style cards (recommendations, related titles). It is
+/// [coverAspect] (96 x 144), shared so the two lists read as one kind of list
+/// and a grid of mixed sources does not visibly jitter.
+const double listCoverWidth = 96;
+const double listCoverHeight = 144;
+
 /// Padding and gaps. An audit of `EdgeInsets.all(...)` across the app found
 /// the same handful of values reached for over and over - 8, 12, 16, 20, 24 -
 /// alongside dozens of one-off numbers (3, 6, 7, 9, 14, 15...) that are each

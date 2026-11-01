@@ -12,12 +12,8 @@ import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
-/// Covers are 2:3, so a grid of mixed sources does not visibly jitter.
-const double _coverWidth = 96;
-const double _coverHeight = 144;
-
 /// Cover plus the card's vertical padding.
-const double _cardExtent = _coverHeight + 12;
+const double _cardExtent = listCoverHeight + 12;
 
 const double _descriptionFontSize = 12;
 const double _descriptionLineHeight = 1.35;
@@ -142,8 +138,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 borderRadius: BorderRadius.circular(6),
                 child: Image(
                   image: coverProvider(toImgUrl(coverUrl)),
-                  width: _coverWidth,
-                  height: _coverHeight,
+                  width: listCoverWidth,
+                  height: listCoverHeight,
                   fit: BoxFit.cover,
                 ),
               ),
