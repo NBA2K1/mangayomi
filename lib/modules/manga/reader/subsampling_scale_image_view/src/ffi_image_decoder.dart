@@ -511,37 +511,6 @@ class FfiImageDecoder {
     }
   }
 
-  bool getImageDimensions(
-    String filePath,
-    List<int> outSize, {
-    bool cropBorders = false,
-  }) {
-    final Pointer<Utf8> pathPtr = filePath.toNativeUtf8();
-    final Pointer<Int32> wPtr = calloc<Int32>();
-    final Pointer<Int32> hPtr = calloc<Int32>();
-
-    try {
-      final Pointer<Opaque> ctx = _initDecoder(
-        pathPtr,
-        cropBorders,
-        wPtr,
-        hPtr,
-      );
-      if (ctx.address == 0) return false;
-
-      outSize[0] = wPtr.value;
-      outSize[1] = hPtr.value;
-      _freeDecoder(ctx);
-      return true;
-    } catch (_) {
-      return false;
-    } finally {
-      calloc.free(pathPtr);
-      calloc.free(wPtr);
-      calloc.free(hPtr);
-    }
-  }
-
   Future<void> stop() async {
     _startFuture = null;
     if (!_isRunning && _cIsolate == null && _receivePort == null) {
