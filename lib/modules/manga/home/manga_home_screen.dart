@@ -30,7 +30,7 @@ import 'package:mangayomi/modules/widgets/gridview_widget.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
 import 'package:mangayomi/utils/global_style.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
-import 'package:marquee/marquee.dart';
+import 'package:mangayomi/modules/widgets/overflow_marquee_text.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -343,16 +343,9 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                         : "${context.l10n.local_source} ${source.itemType.localized(context.l10n)}",
                   ),
                   source.notes != null && source.notes!.isNotEmpty
-                      ? SizedBox(
-                          height: 20,
-                          child: Marquee(
-                            text: l10n.extension_notes(source.notes!),
-                            style: const TextStyle(fontSize: 12),
-                            blankSpace: 40.0,
-                            velocity: 30.0,
-                            pauseAfterRound: const Duration(seconds: 1),
-                            startPadding: 10.0,
-                          ),
+                      ? MarqueeText(
+                          text: l10n.extension_notes(source.notes!),
+                          style: const TextStyle(fontSize: 12),
                         )
                       : Container(),
                 ],

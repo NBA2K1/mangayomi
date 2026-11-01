@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
-import 'package:marquee/marquee.dart';
+import 'package:mangayomi/modules/widgets/overflow_marquee_text.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -278,41 +278,10 @@ class ChapterListTileWidget extends ConsumerWidget {
               ? Colors.black.withValues(alpha: 0.4)
               : Colors.white.withValues(alpha: 0.3)
         : null;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double availableWidth = constraints.maxWidth;
-        if (availableWidth <= 0) return const SizedBox.shrink();
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: text,
-            style: TextStyle(fontSize: 13, color: titleColor),
-          ),
-          maxLines: 1,
-          textDirection: TextDirection.ltr,
-        )..layout(maxWidth: availableWidth);
-
-        final isOverflowing = textPainter.didExceedMaxLines;
-
-        if (isOverflowing && availableWidth > 50) {
-          return SizedBox(
-            height: 20,
-            child: Marquee(
-              text: text,
-              style: TextStyle(fontSize: 13, color: titleColor),
-              blankSpace: 40.0,
-              velocity: 30.0,
-              pauseAfterRound: const Duration(seconds: 1),
-              startPadding: 10.0,
-            ),
-          );
-        } else {
-          return Text(
-            text,
-            style: TextStyle(fontSize: 13, color: titleColor),
-            overflow: TextOverflow.ellipsis,
-          );
-        }
-      },
+    return OverflowMarqueeText(
+      text: text,
+      style: TextStyle(fontSize: 13, color: titleColor),
+      minMarqueeWidth: 50,
     );
   }
 

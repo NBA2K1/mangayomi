@@ -15,7 +15,7 @@ import 'package:mangayomi/services/fetch_watch_order.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:marquee/marquee.dart';
+import 'package:mangayomi/modules/widgets/overflow_marquee_text.dart';
 import 'package:mangayomi/modules/widgets/zoomable_image_view.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -677,38 +677,12 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
   }
 
   Widget _buildTitle(String text, BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Make sure that (constraints.maxWidth - (35 + 5)) is strictly positive.
-        final double availableWidth = constraints.maxWidth - (35 + 5);
-        final textPainter = TextPainter(
-          text: TextSpan(text: text, style: const TextStyle(fontSize: 13)),
-          maxLines: 1,
-          textDirection: TextDirection.ltr,
-        )..layout(maxWidth: availableWidth > 0 ? availableWidth : 1.0); // - Download icon size (download_page_widget.dart, Widget Build SizedBox width: 35)
-
-        final isOverflowing = textPainter.didExceedMaxLines;
-
-        if (isOverflowing) {
-          return SizedBox(
-            height: 20,
-            child: Marquee(
-              text: text,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              blankSpace: 40.0,
-              velocity: 30.0,
-              pauseAfterRound: const Duration(seconds: 1),
-              startPadding: 10.0,
-            ),
-          );
-        } else {
-          return Text(
-            text,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            overflow: TextOverflow.ellipsis,
-          );
-        }
-      },
+    return OverflowMarqueeText(
+      text: text,
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+      // Download icon size (download_page_widget.dart, Widget Build SizedBox
+      // width: 35) plus its padding.
+      reservedWidth: 35 + 5,
     );
   }
 
