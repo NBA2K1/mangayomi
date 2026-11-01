@@ -8,7 +8,7 @@ import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/models/track_preference.dart';
 import 'package:mangayomi/models/track_search.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/tracker_search_widget.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
+import 'package:mangayomi/modules/widgets/zoomable_image_view.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -20,8 +20,6 @@ import 'package:mangayomi/utils/manga_cover_actions.dart';
 import 'package:mangayomi/utils/share.dart';
 import 'package:path/path.dart' as p;
 import 'package:mangayomi/utils/constant.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Full-screen cover viewer: pinch-zoom the cover, plus - along the bottom -
@@ -39,25 +37,7 @@ void showMangaCoverViewer(
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: PhotoViewGallery.builder(
-                backgroundDecoration: const BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                itemCount: 1,
-                builder: (context, index) {
-                  return PhotoViewGalleryPageOptions(
-                    imageProvider: imageProvider,
-                    minScale: PhotoViewComputedScale.contained,
-                    maxScale: 2.0,
-                  );
-                },
-                loadingBuilder: (context, event) {
-                  return const ProgressCenter();
-                },
-              ),
-            ),
+            ZoomableImageView(imageProvider: imageProvider),
             Positioned(
               bottom: 0,
               right: 0,

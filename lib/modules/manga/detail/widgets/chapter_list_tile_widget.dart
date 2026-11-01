@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
-import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:marquee/marquee.dart';
@@ -21,8 +20,7 @@ import 'package:mangayomi/modules/manga/download/providers/download_provider.dar
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
+import 'package:mangayomi/modules/widgets/zoomable_image_view.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 class ChapterListTileWidget extends ConsumerWidget {
@@ -329,7 +327,7 @@ class ChapterListTileWidget extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
       child: GestureDetector(
         onTap: () {
-          _openImage(context, imageProvider);
+          showImagePreview(context, imageProvider);
         },
         child: SizedBox(
           width: 50,
@@ -422,40 +420,6 @@ class ChapterListTileWidget extends ConsumerWidget {
       alignment: alignment,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Icon(icon, color: Colors.white),
-    );
-  }
-
-  void _openImage(BuildContext context, ImageProvider imageProvider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: PhotoViewGallery.builder(
-                  backgroundDecoration: const BoxDecoration(
-                    color: Colors.transparent,
-                  ),
-                  itemCount: 1,
-                  builder: (context, index) {
-                    return PhotoViewGalleryPageOptions(
-                      imageProvider: imageProvider,
-                      minScale: PhotoViewComputedScale.contained,
-                      maxScale: 2.0,
-                    );
-                  },
-                  loadingBuilder: (context, event) {
-                    return const ProgressCenter();
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -16,8 +16,7 @@ import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:marquee/marquee.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
+import 'package:mangayomi/modules/widgets/zoomable_image_view.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
@@ -725,7 +724,7 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
       padding: const EdgeInsets.all(3),
       child: GestureDetector(
         onTap: () {
-          _openImage(context, imageProvider);
+          showImagePreview(context, imageProvider);
         },
         child: Stack(
           children: [
@@ -762,40 +761,6 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  void _openImage(BuildContext context, ImageProvider imageProvider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: PhotoViewGallery.builder(
-                  backgroundDecoration: const BoxDecoration(
-                    color: Colors.transparent,
-                  ),
-                  itemCount: 1,
-                  builder: (context, index) {
-                    return PhotoViewGalleryPageOptions(
-                      imageProvider: imageProvider,
-                      minScale: PhotoViewComputedScale.contained,
-                      maxScale: 2.0,
-                    );
-                  },
-                  loadingBuilder: (context, event) {
-                    return const ProgressCenter();
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

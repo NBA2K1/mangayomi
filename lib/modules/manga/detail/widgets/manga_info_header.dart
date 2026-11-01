@@ -334,7 +334,11 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
       child: GestureDetector(
         onTap: () {
-          _openImage(imageProvider);
+          showMangaCoverViewer(
+            context,
+            manga: widget.manga,
+            imageProvider: imageProvider,
+          );
         },
         child: SizedBox(
           width: 65 * 1.5,
@@ -534,14 +538,6 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
           ),
         );
       },
-    );
-  }
-
-  void _openImage(ImageProvider imageProvider) {
-    showMangaCoverViewer(
-      context,
-      manga: widget.manga,
-      imageProvider: imageProvider,
     );
   }
 
