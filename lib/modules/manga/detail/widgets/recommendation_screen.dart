@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/settings.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/list_card_widgets.dart';
 import 'package:mangayomi/modules/widgets/error_state.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/discovery/media_lookup_context.dart';
 import 'package:mangayomi/services/recommendation.dart';
-import 'package:mangayomi/utils/cached_network.dart';
-import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/design_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -116,109 +115,75 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   Widget _card(BuildContext context, RecommendationResult rec, int index) {
     final title = rec.title;
     final coverUrl = rec.imgURLs.isNotEmpty ? rec.imgURLs.first : "";
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        // Nothing was focusable on entry, so a remote did nothing until the
-        // user guessed a direction. The first card claims focus on a TV.
-        autofocus: isTv && index == 0,
-        focusColor: context.primaryColor.withValues(alpha: Alphas.focus),
-        onTap: () => context.push(
-          '/globalSearch',
-          extra: (rec.searchTarget.query, rec.searchTarget.itemType),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image(
-                  image: coverProvider(toImgUrl(coverUrl)),
-                  width: listCoverWidth,
-                  height: listCoverHeight,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // The pill is an inline span, so a wrapped title continues
-                    // under the badge instead of hanging at the text column.
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          if (rec.rating case CatalogRating rating) ...[
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: _ratingPill(context, rating),
-                            ),
-                            const WidgetSpan(child: SizedBox(width: 8)),
-                          ],
-                          TextSpan(text: title),
-                        ],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (rec.description != null &&
-                        rec.description!.isNotEmpty) ...[
-                      const SizedBox(height: 5),
-                      // Non-flex children (title, chips) are laid out first,
-                      // so this gets whatever height the fixed-size card has
-                      // left. Fill it with as many lines as fit.
-                      Flexible(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final style = TextStyle(
-                              fontSize: _descriptionFontSize,
-                              height: _descriptionLineHeight,
-                              color: context.textColor.withValues(
-                                alpha: Alphas.secondary,
-                              ),
-                            );
-                            final lineExtent =
-                                MediaQuery.textScalerOf(context)
-                                    .scale(_descriptionFontSize) *
-                                _descriptionLineHeight;
-                            final lines = (constraints.maxHeight / lineExtent)
-                                .floor();
-                            if (lines < 1) return const SizedBox.shrink();
-                            return Text(
-                              rec.description!,
-                              maxLines: lines,
-                              overflow: TextOverflow.ellipsis,
-                              style: style,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                    if (rec.genres.isNotEmpty) ...[
-                      const SizedBox(height: 7),
-                      Wrap(
-                        spacing: 5,
-                        runSpacing: 4,
-                        children: [
-                          for (final g in rec.genres.take(3)) _chip(context, g),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+    return ListCoverCard(
+      coverUrl: coverUrl,
+      autofocus: isTv && index == 0,
+      onTap: () => context.push(
+        '/globalSearch',
+        extra: (rec.searchTarget.query, rec.searchTarget.itemType),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // The pill is an inline span, so a wrapped title continues
+          // under the badge instead of hanging at the text column.
+          Text.rich(
+            TextSpan(
+              children: [
+                if (rec.rating case CatalogRating rating) ...[
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: _ratingPill(context, rating),
+                  ),
+                  const WidgetSpan(child: SizedBox(width: 8)),
+                ],
+                TextSpan(text: title),
+              ],
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           ),
-        ),
+          if (rec.description != null && rec.description!.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            // Non-flex children (title, chips) are laid out first,
+            // so this gets whatever height the fixed-size card has
+            // left. Fill it with as many lines as fit.
+            Flexible(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final style = TextStyle(
+                    fontSize: _descriptionFontSize,
+                    height: _descriptionLineHeight,
+                    color: context.textColor.withValues(
+                      alpha: Alphas.secondary,
+                    ),
+                  );
+                  final lineExtent =
+                      MediaQuery.textScalerOf(context)
+                          .scale(_descriptionFontSize) *
+                      _descriptionLineHeight;
+                  final lines = (constraints.maxHeight / lineExtent).floor();
+                  if (lines < 1) return const SizedBox.shrink();
+                  return Text(
+                    rec.description!,
+                    maxLines: lines,
+                    overflow: TextOverflow.ellipsis,
+                    style: style,
+                  );
+                },
+              ),
+            ),
+          ],
+          if (rec.genres.isNotEmpty) ...[
+            const SizedBox(height: 7),
+            Wrap(
+              spacing: 5,
+              runSpacing: 4,
+              children: [for (final g in rec.genres.take(3)) ListTag(label: g)],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -258,23 +223,6 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _chip(BuildContext context, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: context.textColor.withValues(alpha: Alphas.tint),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          color: context.textColor.withValues(alpha: Alphas.secondary),
         ),
       ),
     );

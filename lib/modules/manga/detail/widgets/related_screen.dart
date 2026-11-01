@@ -6,10 +6,7 @@ import 'package:mangayomi/modules/widgets/error_state.dart';
 import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/related_titles.dart';
-import 'package:mangayomi/utils/cached_network.dart';
-import 'package:mangayomi/utils/constant.dart';
-import 'package:mangayomi/utils/design_tokens.dart';
-import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/modules/manga/detail/widgets/list_card_widgets.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
@@ -109,121 +106,44 @@ class _RelatedScreenState extends State<RelatedScreen> {
         ? null
         : prettyFormat(related.format!);
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        // Nothing is focusable on entry otherwise, so a remote does nothing
-        // until the user guesses a direction.
-        autofocus: isTv && index == 0,
-        focusColor: context.primaryColor.withValues(alpha: Alphas.focus),
-        onTap: () => context.push(
-          '/globalSearch',
-          extra: (related.title, related.itemType),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return ListCoverCard(
+      coverUrl: related.coverImage ?? "",
+      autofocus: isTv && index == 0,
+      onTap: () => context.push(
+        '/globalSearch',
+        extra: (related.title, related.itemType),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // The title gets the full width. Putting a tag beside it
+          // cost it a line on anything with a subtitle, and the
+          // title is what is being scanned for.
+          Text(
+            related.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 7),
+          Wrap(
+            spacing: 5,
+            runSpacing: 4,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image(
-                  // toImgUrl stands a blank in for an entry with no poster, so
-                  // a missing cover leaves a gap of the right shape instead of
-                  // collapsing the row.
-                  image: coverProvider(toImgUrl(related.coverImage ?? "")),
-                  width: listCoverWidth,
-                  height: listCoverHeight,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // The title gets the full width. Putting a tag beside it
-                    // cost it a line on anything with a subtitle, and the
-                    // title is what is being scanned for.
-                    Text(
-                      related.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 7),
-                    Wrap(
-                      spacing: 5,
-                      runSpacing: 4,
-                      children: [
-                        // The medium leads and is filled with the accent when
-                        // it differs from what is being read, because that is
-                        // the whole point of the list.
-                        _tag(
-                          context,
-                          medium,
-                          filled: crossesMedium,
-                          bold: true,
-                        ),
-                        _tag(context, _relationLabel(l10n, related.relation)),
-                        // Kitsu's subtype for a manga is "manga", so this said
-                        // "Manga  Manga" on every manga entry. Shown only when
-                        // it narrows the medium: Manhwa, Oneshot, TV, Movie.
-                        if (format != null &&
-                            format.toLowerCase() != medium.toLowerCase())
-                          _tag(context, format),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              // The medium leads and is filled with the accent when
+              // it differs from what is being read, because that is
+              // the whole point of the list.
+              ListTag(label: medium, filled: crossesMedium, bold: true),
+              ListTag(label: _relationLabel(l10n, related.relation)),
+              // Kitsu's subtype for a manga is "manga", so this said
+              // "Manga  Manga" on every manga entry. Shown only when
+              // it narrows the medium: Manhwa, Oneshot, TV, Movie.
+              if (format != null &&
+                  format.toLowerCase() != medium.toLowerCase())
+                ListTag(label: format),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  /// One tag.
-  ///
-  /// Filled with the accent when it is the thing the row is here for, tinted
-  /// otherwise, so a glance down the list finds the medium changes without
-  /// reading any of the words.
-  Widget _tag(
-    BuildContext context,
-    String label, {
-    bool filled = false,
-    bool bold = false,
-  }) {
-    final accent = context.primaryColor;
-    // Computed against the accent rather than the theme, so it stays readable
-    // whichever hue the user picked and in either brightness.
-    final onAccent = accent.computeLuminance() > 0.5
-        ? Colors.black
-        : Colors.white;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: filled
-            ? accent
-            : context.textColor.withValues(alpha: Alphas.tint),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: bold ? FontWeight.w800 : FontWeight.w400,
-          color: filled
-              ? onAccent
-              : context.textColor.withValues(alpha: Alphas.secondary),
-        ),
+        ],
       ),
     );
   }
