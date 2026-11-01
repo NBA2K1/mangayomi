@@ -148,16 +148,6 @@ class SubsamplingScaleImageViewController extends ChangeNotifier {
   /// Resets scale and center to initial state.
   void resetScaleAndCenter() => _state?._reset();
 
-  /// Sets scale and translation directly (without animation).
-  void setScaleAndTranslation(double scale, ui.Offset translation) {
-    _state?._setScaleAndTranslation(scale, translation);
-  }
-
-  /// Sets scale and centers the view on a source point (without animation).
-  void setScaleAndCenter(double scale, ui.Offset sCenter) {
-    _state?._setScaleAndCenter(scale, sCenter);
-  }
-
   /// Animates to a scale and source center.
   void animateScaleAndCenter(
     double targetScale,
@@ -165,15 +155,6 @@ class SubsamplingScaleImageViewController extends ChangeNotifier {
     Duration duration = const Duration(milliseconds: 300),
   }) {
     _state?._animateScaleAndCenter(targetScale, sCenter, duration);
-  }
-
-  /// Animates to a scale and translation.
-  void animateScaleAndTranslation(
-    double targetScale,
-    ui.Offset targetTranslate, {
-    Duration duration = const Duration(milliseconds: 300),
-  }) {
-    _state?._animateScaleAndTranslation(targetScale, targetTranslate, duration);
   }
 
   /// Checks if the image can be panned to the left.
@@ -800,31 +781,6 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     _refreshTiles(load: true);
   }
 
-  void _setScaleAndTranslation(double scale, ui.Offset translation) {
-    if (!mounted || !_isInitialized) return;
-    setState(() {
-      _scale = _clampScale(scale);
-      _vTranslate = _clampTranslate(translation, _scale);
-    });
-    _notifyStateChanged();
-    _refreshTiles(load: true);
-  }
-
-  void _setScaleAndCenter(double scale, ui.Offset sCenter) {
-    if (!mounted || !_isInitialized) return;
-    final clampedScale = _clampScale(scale);
-    final targetTranslate = _translationForScaleAndCenter(
-      clampedScale,
-      sCenter,
-    );
-    setState(() {
-      _scale = clampedScale;
-      _vTranslate = targetTranslate;
-    });
-    _notifyStateChanged();
-    _refreshTiles(load: true);
-  }
-
   ui.Offset _translationForScaleAndCenter(
     double targetScale,
     ui.Offset sCenter,
@@ -862,22 +818,6 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       clampedScale,
       _vTranslate,
       targetTranslate,
-      duration,
-    );
-  }
-
-  void _animateScaleAndTranslation(
-    double targetScale,
-    ui.Offset targetTranslate,
-    Duration duration,
-  ) {
-    if (!mounted || !_isInitialized) return;
-    final clampedScale = _clampScale(targetScale);
-    _startAnimation(
-      _scale,
-      clampedScale,
-      _vTranslate,
-      _clampTranslate(targetTranslate, clampedScale),
       duration,
     );
   }
