@@ -167,26 +167,13 @@ class AboutScreen extends ConsumerWidget {
                             onPressed: () {
                               _launchInBrowser(
                                 Uri.parse(
-                                  'https://github.com/kodjodevf/mangayomi',
+                                  'https://github.com/NBA2K1/mangayomi',
                                 ),
                               );
                             },
                             icon: const Padding(
                               padding: EdgeInsets.only(left: 2.5, right: 2.5),
                               child: FaIcon(FontAwesomeIcons.github),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _launchInBrowser(
-                                Uri.parse(
-                                  'https://discord.com/invite/EjfBuYahsP',
-                                ),
-                              );
-                            },
-                            icon: const Padding(
-                              padding: EdgeInsets.only(right: 5),
-                              child: FaIcon(FontAwesomeIcons.discord),
                             ),
                           ),
                         ],
