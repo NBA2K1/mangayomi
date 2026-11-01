@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/browse/browse_screen.dart';
-import 'package:mangayomi/modules/widgets/custom_sliver_grouped_list_view.dart';
+import 'package:mangayomi/modules/browse/widgets/browse_list_widgets.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
@@ -67,6 +67,15 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     return SourceListTile(source: source, itemType: widget.itemType);
   }
 
+  /// The "Other" group: the local source, which is always available.
+  List<Widget> _localSource(BuildContext context) => [
+    BrowseSectionHeader(context.l10n.other),
+    SourceListTile(
+      source: Source(name: "local", lang: "", itemType: widget.itemType),
+      itemType: widget.itemType,
+    ),
+  ];
+
   @override
   void dispose() {
     for (final n in [
@@ -125,28 +134,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                     label: Text(context.l10n.show_extensions),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        l10n.other,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SourceListTile(
-                  source: Source(
-                    name: "local",
-                    lang: "",
-                    itemType: widget.itemType,
-                  ),
-                  itemType: widget.itemType,
-                ),
+                ..._localSource(context),
               ],
             );
           }
@@ -158,130 +146,34 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
           final showWarning = sources
               .where((e) => e.sourceCodeLanguage == SourceCodeLanguage.mihon)
               .isNotEmpty;
-          return Scrollbar(
-            interactive: true,
+          return BrowseSourceListView(
             controller: controller,
-            thickness: 12,
-            radius: const Radius.circular(10),
-            child: CustomScrollView(
-              controller: controller,
-              slivers: [
-                if (showWarning)
-                  const SliverToBoxAdapter(
-                    child: ExtensionServerWarningBanner(),
-                  ),
-                CustomSliverGroupedListView<Source, String>(
-                  elements: lastUsedEntries,
-                  groupBy: (element) => "",
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.last_used,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  itemBuilder: (context, Source element) {
-                    return _row(element, shareNodes: false);
-                  },
-                  groupComparator: (group1, group2) => group1.compareTo(group2),
-                  itemComparator: (item1, item2) =>
-                      item1.name!.compareTo(item2.name!),
-                  order: GroupedListOrder.ASC,
-                ),
-                CustomSliverGroupedListView<Source, String>(
-                  elements: isPinnedEntries,
-                  groupBy: (element) => "",
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.pinned,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  itemBuilder: (context, Source element) {
-                    return _row(element);
-                  },
-                  groupComparator: (group1, group2) => group1.compareTo(group2),
-                  itemComparator: (item1, item2) =>
-                      item1.name!.compareTo(item2.name!),
-                  order: GroupedListOrder.ASC,
-                ),
-                CustomSliverGroupedListView<Source, String>(
-                  elements: allEntriesWithoutIspinned,
-                  groupBy: (element) =>
-                      completeLanguageName(element.lang!.toLowerCase()),
-                  groupSeparatorBuilder: (String groupByValue) => Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          groupByValue,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  itemBuilder: (context, Source element) {
-                    return _row(element);
-                  },
-                  groupComparator: (group1, group2) => group1.compareTo(group2),
-                  itemComparator: (item1, item2) =>
-                      item1.name!.compareTo(item2.name!),
-                  order: GroupedListOrder.ASC,
-                ),
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Row(
-                          children: [
-                            Text(
-                              l10n.other,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SourceListTile(
-                        source: Source(
-                          name: "local",
-                          lang: "",
-                          itemType: widget.itemType,
-                        ),
-                        itemType: widget.itemType,
-                      ),
-                    ],
-                  ),
-                ),
-                // Trailing room rather than padding around the viewport, so rows
-                // scroll under the translucent bar, which is what gives it
-                // something to blur, and only the last one clears it.
-                SliverToBoxAdapter(
-                  child: SizedBox(height: pageBottomInsets(context).bottom),
-                ),
-              ],
-            ),
+            showWarning: showWarning,
+            slivers: [
+              browseSourceSection(
+                elements: lastUsedEntries,
+                groupBy: (_) => "",
+                header: (_) => BrowseSectionHeader(l10n.last_used),
+                itemBuilder: (context, element) =>
+                    _row(element, shareNodes: false),
+              ),
+              browseSourceSection(
+                elements: isPinnedEntries,
+                groupBy: (_) => "",
+                header: (_) => BrowseSectionHeader(l10n.pinned),
+                itemBuilder: (context, element) => _row(element),
+              ),
+              browseSourceSection(
+                elements: allEntriesWithoutIspinned,
+                groupBy: (element) =>
+                    completeLanguageName(element.lang!.toLowerCase()),
+                header: (group) => BrowseSectionHeader(group),
+                itemBuilder: (context, element) => _row(element),
+              ),
+              SliverToBoxAdapter(
+                child: Column(children: _localSource(context)),
+              ),
+            ],
           );
         },
         error: (error, _) => ErrorState(

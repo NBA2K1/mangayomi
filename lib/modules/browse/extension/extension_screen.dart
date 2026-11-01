@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
-import 'package:mangayomi/modules/widgets/custom_sliver_grouped_list_view.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/extension/providers/extensions_provider.dart';
@@ -12,7 +11,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/fetch_sources_list.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/extension_list_tile_widget.dart';
-import 'package:mangayomi/modules/widgets/extension_server_warning_banner.dart';
+import 'package:mangayomi/modules/browse/widgets/browse_list_widgets.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 class ExtensionScreen extends ConsumerStatefulWidget {
@@ -138,32 +137,17 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
               }
             }
 
-            return Scrollbar(
-              interactive: true,
+            return BrowseSourceListView(
               controller: controller,
-              thickness: 12,
-              radius: const Radius.circular(10),
-              child: CustomScrollView(
-                controller: controller,
-                slivers: [
-                  if (showWarning)
-                    const SliverToBoxAdapter(
-                      child: ExtensionServerWarningBanner(),
-                    ),
-                  if (updateEntries.isNotEmpty)
-                    _buildUpdateSection(updateEntries, l10n),
-                  if (installedEntries.isNotEmpty)
-                    _buildInstalledSection(installedEntries, l10n),
-                  if (notInstalledEntries.isNotEmpty)
-                    _buildNotInstalledSection(notInstalledEntries),
-                  // Trailing room rather than padding around the viewport, so
-                  // rows scroll under the translucent bar (which is what gives
-                  // it something to blur) and only the last one clears it.
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: pageBottomInsets(context).bottom),
-                  ),
-                ],
-              ),
+              showWarning: showWarning,
+              slivers: [
+                if (updateEntries.isNotEmpty)
+                  _buildUpdateSection(updateEntries, l10n),
+                if (installedEntries.isNotEmpty)
+                  _buildInstalledSection(installedEntries, l10n),
+                if (notInstalledEntries.isNotEmpty)
+                  _buildNotInstalledSection(notInstalledEntries),
+              ],
             );
           },
           error: (error, _) => Center(
@@ -179,10 +163,10 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
   }
 
   Widget _buildUpdateSection(List<Source> updateEntries, dynamic l10n) {
-    return CustomSliverGroupedListView<Source, String>(
+    return browseSourceSection(
       elements: updateEntries,
       groupBy: (_) => "",
-      groupSeparatorBuilder: (_) => StatefulBuilder(
+      header: (_) => StatefulBuilder(
         builder: (context, setState) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -224,53 +208,29 @@ class _ExtensionScreenState extends ConsumerState<ExtensionScreen> {
           );
         },
       ),
-      itemBuilder: (context, Source element) =>
+      itemBuilder: (context, element) =>
           ExtensionListTileWidget(key: ValueKey(element.id), source: element),
-      groupComparator: (group1, group2) => group1.compareTo(group2),
-      itemComparator: (item1, item2) =>
-          item1.name?.compareTo(item2.name ?? '') ?? 0,
-      order: GroupedListOrder.ASC,
     );
   }
 
   Widget _buildInstalledSection(List<Source> installedEntries, dynamic l10n) {
-    return CustomSliverGroupedListView<Source, String>(
+    return browseSourceSection(
       elements: installedEntries,
       groupBy: (_) => "",
-      groupSeparatorBuilder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          l10n.installed,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
-      itemBuilder: (context, Source element) =>
+      header: (_) => BrowseSectionHeader(l10n.installed),
+      itemBuilder: (context, element) =>
           ExtensionListTileWidget(key: ValueKey(element.id), source: element),
-      groupComparator: (group1, group2) => group1.compareTo(group2),
-      itemComparator: (item1, item2) =>
-          item1.name?.compareTo(item2.name ?? '') ?? 0,
-      order: GroupedListOrder.ASC,
     );
   }
 
   Widget _buildNotInstalledSection(List<Source> notInstalledEntries) {
-    return CustomSliverGroupedListView<Source, String>(
+    return browseSourceSection(
       elements: notInstalledEntries,
       groupBy: (element) =>
           completeLanguageName(element.lang?.toLowerCase() ?? ''),
-      groupSeparatorBuilder: (String groupByValue) => Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: Text(
-          groupByValue,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
-      itemBuilder: (context, Source element) =>
+      header: (group) => BrowseSectionHeader(group),
+      itemBuilder: (context, element) =>
           ExtensionListTileWidget(key: ValueKey(element.id), source: element),
-      groupComparator: (group1, group2) => group1.compareTo(group2),
-      itemComparator: (item1, item2) =>
-          item1.name?.compareTo(item2.name ?? '') ?? 0,
-      order: GroupedListOrder.ASC,
     );
   }
 }
