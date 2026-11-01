@@ -1,4 +1,3 @@
-import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -33,7 +32,6 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
   }
 
   late String query = widget.track.title!.trim();
-  bool hide = false;
   late List<TrackSearch>? tracks = [];
   String? _errorMsg;
   Future<void> _init() async {
@@ -52,11 +50,7 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
     } catch (e) {
       _errorMsg = e.toString();
     }
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    if (mounted) setState(() => _isLoading = false);
   }
 
   late final _controller = TextEditingController(text: query);
@@ -87,8 +81,10 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
             )
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: SizedBox(
-                height: context.height(0.8),
+              // At most 80% of the screen, but never more than what is left
+              // above the keyboard (see trackersSearchDraggableMenu).
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: context.height(0.8)),
                 child: Column(
                   mainAxisAlignment: _errorMsg != null
                       ? MainAxisAlignment.center
@@ -99,7 +95,7 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
                         padding: const EdgeInsets.all(30),
                         child: ErrorText(_errorMsg!),
                       ),
-                    if (_errorMsg == null && !hide)
+                    if (_errorMsg == null)
                       Flexible(
                         child: SuperListView.separated(
                           padding: const EdgeInsets.only(top: 20),
@@ -207,20 +203,9 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: TextFormField(
-                        onTap: () {
-                          if (isMobile) {
-                            setState(() {
-                              hide = true;
-                            });
-                          }
-                        },
                         controller: _controller,
                         keyboardType: TextInputType.text,
-                        onChanged: (d) {
-                          setState(() {
-                            query = d;
-                          });
-                        },
+                        onChanged: (d) => setState(() => query = d),
                         onFieldSubmitted: (d) async {
                           setState(() {
                             _isLoading = true;
@@ -238,15 +223,9 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
                                 .search(d.trim());
                           } catch (e) {
                             _errorMsg = e.toString();
-                            hide = false;
                           }
 
-                          if (mounted) {
-                            setState(() {
-                              _isLoading = false;
-                              hide = false;
-                            });
-                          }
+                          if (mounted) setState(() => _isLoading = false);
                         },
                         decoration: InputDecoration(
                           isDense: true,
@@ -255,9 +234,7 @@ class _TrackerWidgetSearchState extends ConsumerState<TrackerWidgetSearch> {
                           suffixIcon: query.isEmpty
                               ? null
                               : IconButton(
-                                  onPressed: () {
-                                    _controller.clear();
-                                  },
+                                  onPressed: () => _controller.clear(),
                                   icon: const Icon(Icons.clear),
                                 ),
                           enabledBorder: OutlineInputBorder(
@@ -287,47 +264,39 @@ Future<dynamic> trackersSearchDraggableMenu(
 }) async {
   return await showDialog(
     context: context,
-    builder: (context) => LayoutBuilder(
-      builder: (context, constraints) => Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          child: SizedBox(
-            height: constraints.maxHeight,
-            child: Column(
+    // The Scaffold shrinks its body when the keyboard opens, so the sheet
+    // (anchored to the bottom) always ends right above the keyboard and the
+    // result list gives up the space instead.
+    builder: (context) => Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(Icons.clear),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.clear),
                   ),
                 ),
-                TrackerWidgetSearch(track: track, itemType: itemType),
               ],
             ),
           ),
-        ),
+          Flexible(
+            child: TrackerWidgetSearch(track: track, itemType: itemType),
+          ),
+        ],
       ),
     ),
   );
