@@ -9,11 +9,10 @@ import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/circular_progress_indicator_animate_rotate.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_image_error.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
 
 class MinSubsamplingImage extends ConsumerStatefulWidget {
   final UChapDataPreload data;
@@ -409,43 +408,15 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
     }
 
     if (_hasError || _uiImage == null) {
-      final l10n = l10nLocalizations(context)!;
       return Container(
         color: getBackgroundColor(backgroundColor),
         height: placeholderHeight,
         width: placeholderWidth,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              l10n.image_loading_error,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ReaderInteractiveRegion(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                  ),
-                  onPressed: () {
-                    widget.failedToLoadImage(false);
-                    _loadImage(refresh: true, evictCache: true);
-                  },
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(l10n.retry),
-                ),
-              ),
-            ),
-          ],
+        child: ReaderImageError(
+          onRetry: () {
+            widget.failedToLoadImage(false);
+            _loadImage(refresh: true, evictCache: true);
+          },
         ),
       );
     }

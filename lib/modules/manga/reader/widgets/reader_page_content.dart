@@ -11,11 +11,10 @@ import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart
 import 'package:mangayomi/modules/manga/reader/widgets/circular_progress_indicator_animate_rotate.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/double_page_view.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/image_actions_dialog.dart';
-import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_image_error.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/transition_view.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/reader/reader_screen.dart';
-import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -320,44 +319,16 @@ class ReaderPagedItem extends ConsumerWidget {
         }
         if (state.loadState == ssiv.LoadState.failed) {
           onFailedToLoadImage(index, true);
-          final l10n = l10nLocalizations(context)!;
           return Container(
             color:
                 getBackgroundColor(backgroundColor) ??
                 Theme.of(context).scaffoldBackgroundColor,
             height: context.height(0.8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  l10n.image_loading_error,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ReaderInteractiveRegion(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 20,
-                        ),
-                      ),
-                      onPressed: () {
-                        state.reLoadImage();
-                        onFailedToLoadImage(index, false);
-                      },
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: Text(l10n.retry),
-                    ),
-                  ),
-                ),
-              ],
+            child: ReaderImageError(
+              onRetry: () {
+                state.reLoadImage();
+                onFailedToLoadImage(index, false);
+              },
             ),
           );
         }
