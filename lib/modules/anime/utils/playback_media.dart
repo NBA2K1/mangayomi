@@ -12,26 +12,20 @@ Media playbackMedia(
   required bool isLocal,
   Map<String, String>? httpHeaders,
   Duration? start,
-  bool? windows,
 }) {
   if (!isLocal) {
     return Media(resource, httpHeaders: httpHeaders, start: start);
   }
 
-  return _LocalFileMedia(
-    resource,
-    httpHeaders: httpHeaders,
-    start: start,
-    windows: windows ?? Platform.isWindows,
-  );
+  return _LocalFileMedia(resource, httpHeaders: httpHeaders, start: start);
 }
 
-String localFileUri(String resource, {required bool windows}) {
+String localFileUri(String resource) {
   final uri = Uri.tryParse(resource);
   if (uri != null && uri.isScheme('file')) {
     return uri.toString();
   }
-  return Uri.file(resource, windows: windows).toString();
+  return Uri.file(resource, windows: Platform.isWindows).toString();
 }
 
 // Media's constructors are not extendable, so implement its interface instead.
@@ -42,8 +36,7 @@ class _LocalFileMedia implements Media {
     this.start,
     this.end,
     this.extras,
-    required bool windows,
-  }) : uri = localFileUri(resource, windows: windows);
+  }) : uri = localFileUri(resource);
 
   @override
   final String uri;
@@ -74,7 +67,6 @@ class _LocalFileMedia implements Media {
       httpHeaders: httpHeaders ?? this.httpHeaders,
       start: start ?? this.start,
       end: end ?? this.end,
-      windows: false,
     );
   }
 
