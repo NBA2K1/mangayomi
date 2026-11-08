@@ -424,20 +424,6 @@ class CrashReports {
     _flush();
   }
 
-  /// Puts the reporter back to how a fresh process finds it. All of this is
-  /// process-global, so a test that wants a second launch has to say so.
-  @visibleForTesting
-  static void resetForTest() {
-    _reports.clear();
-    _pending.clear();
-    _reported.clear();
-    _file = null;
-    _screen = null;
-    _seen = false;
-    _loaded = false;
-    _ready = null;
-  }
-
   static void _trim() {
     if (_reports.length > _max) {
       _reports.removeRange(0, _reports.length - _max);

@@ -261,7 +261,6 @@ class MCookieManager extends InterceptorContract {
 /// Linux WebViews can persist `navigator.userAgent` as a JSON string, including
 /// the outer quotes. Normalize both newly captured and already saved values so
 /// they cannot keep producing rejected requests after an app update.
-@visibleForTesting
 String normalizeUserAgent(String userAgent) {
   final value = userAgent.trim();
   if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
@@ -275,7 +274,6 @@ String normalizeUserAgent(String userAgent) {
 
 /// Applies the configured browser identity as a fallback. Extensions that need
 /// a source-specific user agent keep their explicit header.
-@visibleForTesting
 void applyDefaultUserAgent(BaseRequest request, String? userAgent) {
   if (hasUserAgentHeader(request.headers) || userAgent == null) return;
 
@@ -285,11 +283,9 @@ void applyDefaultUserAgent(BaseRequest request, String? userAgent) {
   }
 }
 
-@visibleForTesting
 bool hasUserAgentHeader(Map<String, String> headers) =>
     headers.keys.any((key) => key.toLowerCase() == HttpHeaders.userAgentHeader);
 
-@visibleForTesting
 void applyStoredRequestHeaders(
   BaseRequest request, {
   required Map<String, String> cookieHeaders,
@@ -317,7 +313,6 @@ const _redactedHeaders = {
 
 /// Logs end up in a file users share on bug reports, so tracker bearer
 /// tokens and site session cookies must never be written there.
-@visibleForTesting
 Map<String, String> redactHeaders(Map<String, String> headers) => {
   for (final MapEntry(:key, :value) in headers.entries)
     key: _redactedHeaders.contains(key.toLowerCase()) ? '<redacted>' : value,

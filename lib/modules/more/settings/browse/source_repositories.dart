@@ -26,7 +26,6 @@ class SourceRepositories extends ConsumerStatefulWidget {
 
 class _SourceRepositoriesState extends ConsumerState<SourceRepositories> {
   List<Repo> _entries = [];
-  String urlInput = "";
   bool isRefreshing = false;
 
   Future<void> _launchInBrowser(Uri url) async {

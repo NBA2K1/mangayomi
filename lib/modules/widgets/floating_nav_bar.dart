@@ -106,7 +106,6 @@ class FloatingNavBar extends StatefulWidget {
   static const _shortViewport = 480.0;
   static const _shortViewportTrim = 6.0;
 
-  @visibleForTesting
   static double heightFor(int destinationCount, {double viewportHeight = 0}) {
     final crowding =
         math.max(0, destinationCount - _comfortableCount) * _shrinkPerExtra;
@@ -118,12 +117,9 @@ class FloatingNavBar extends StatefulWidget {
 
   /// Hairline. Anything heavier stops reading as glass and starts reading as
   /// a border.
-  @visibleForTesting
   static const glassStrokeWidth = 1.0;
 
-  @visibleForTesting
   static const glassPatchStops = [0.0, 0.13, 0.27, 0.44, 0.58, 0.71, 0.86, 1.0];
-  @visibleForTesting
   static const glassPatchAlphas = [
     1.0,
     0.42,

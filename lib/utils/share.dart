@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
@@ -59,7 +58,6 @@ Future<void> shareOrCopy(
 /// place the reader's own save action puts images — and the copy's path is
 /// reported instead. Falling back to the text or URI covers the call sites
 /// that share a link rather than a file.
-@visibleForTesting
 Future<String?> shareFallbackText(
   ShareParams params,
   Directory? directory, {

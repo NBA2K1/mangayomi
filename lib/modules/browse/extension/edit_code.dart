@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:json_view/json_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -272,9 +272,7 @@ class _CodeEditorPageState extends ConsumerState<CodeEditorPage> {
                         bottomLeft: Radius.circular(12),
                       ),
                       child: CodeEditor(
-                        toolbarController:
-                            defaultTargetPlatform == TargetPlatform.iOS ||
-                                defaultTargetPlatform == TargetPlatform.android
+                        toolbarController: isMobile
                             ? _selectionToolbarController
                             : null,
                         style: CodeEditorStyle(

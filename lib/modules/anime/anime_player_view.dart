@@ -28,7 +28,6 @@ import 'package:mangayomi/modules/anime/utils/audio_track_label.dart';
 import 'package:mangayomi/modules/anime/utils/playback_media.dart';
 import 'package:mangayomi/modules/anime/utils/video_prefs.dart';
 import 'package:mangayomi/modules/anime/providers/state_provider.dart';
-import 'package:mangayomi/modules/anime/utils/player_lifecycle.dart';
 import 'package:mangayomi/modules/anime/widgets/aniskip_countdown_btn.dart';
 import 'package:mangayomi/modules/anime/widgets/tv_player_controls.dart';
 import 'package:mangayomi/modules/anime/widgets/tv_player_pills.dart';
@@ -92,11 +91,9 @@ class _AnimePlayerViewState extends riv.ConsumerState<AnimePlayerView> {
   bool _episodeReplacementInProgress = false;
   @override
   void dispose() {
-    if (shouldExitDesktopFullscreenOnDispose(
-      isDesktop: isDesktop,
-      isFullscreen: desktopFullScreenPlayer,
-      isEpisodeReplacement: _episodeReplacementInProgress,
-    )) {
+    if (isDesktop &&
+        desktopFullScreenPlayer &&
+        !_episodeReplacementInProgress) {
       unawaited(setFullScreen(value: false));
     }
     for (var infoHash in _infoHashList) {
@@ -817,12 +814,9 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
 
   Future<void> _retireVideoTexture() async {
     if (!_videoTextureVisible || !mounted) return;
-    await retirePlaybackSurface(
-      hideSurface: () {
-        if (mounted) setState(() => _videoTextureVisible = false);
-      },
-      waitForFrame: () => WidgetsBinding.instance.endOfFrame,
-    );
+    setState(() => _videoTextureVisible = false);
+    await WidgetsBinding.instance.endOfFrame;
+    await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 
   Future<void> _exitDesktopFullScreen() async {
@@ -983,10 +977,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
       _player,
       configuration: VideoControllerConfiguration(
         hwdec: hwdecMode,
-        enableHardwareAcceleration: shouldUseHardwareAcceleratedVideoOutput(
-          userEnabled: enableHardwareAccel,
-          isWindows: Platform.isWindows,
-        ),
+        enableHardwareAcceleration: enableHardwareAccel,
         vo: Platform.isAndroid
             ? useGpuNext
                   ? "gpu-next"
@@ -1603,21 +1594,27 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
     _subSettingsSub?.close();
     WidgetsBinding.instance.removeObserver(this);
     _setCurrentPosition(true, saveWatchTime: true);
-    final playerCleanup = disposePlaybackSession(
-      listenerCancellations: [
-        _completed.cancel(),
-        _currentPositionSub.cancel(),
-        _playerErrorSub.cancel(),
-        _currentTotalDurationSub.cancel(),
-        if (_tracksSub != null) _tracksSub!.cancel(),
-        if (_trackSub != null) _trackSub!.cancel(),
-      ],
-      beforeDisposePlayer: Platform.isWindows
-          ? () => Future<void>.delayed(const Duration(milliseconds: 250))
-          : null,
-      disposePlayer: _player.dispose,
+    // Player.dispose() already stops playback; racing it with a separate stop
+    // call can terminate desktop builds during route disposal.
+    unawaited(
+      () async {
+        try {
+          await Future.wait([
+            _completed.cancel(),
+            _currentPositionSub.cancel(),
+            _playerErrorSub.cancel(),
+            _currentTotalDurationSub.cancel(),
+            if (_tracksSub != null) _tracksSub!.cancel(),
+            if (_trackSub != null) _trackSub!.cancel(),
+          ]);
+        } finally {
+          if (Platform.isWindows) {
+            await Future<void>.delayed(const Duration(milliseconds: 250));
+          }
+          await _player.dispose();
+        }
+      }().catchError((_) {}),
     );
-    unawaited(playerCleanup.catchError((_) {}));
     _currentPosition.dispose();
     _currentTotalDuration.dispose();
     _video.dispose();

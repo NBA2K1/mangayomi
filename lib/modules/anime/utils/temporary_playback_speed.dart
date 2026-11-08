@@ -9,8 +9,6 @@ const temporaryPlaybackSpeeds = <double>[
   0.25,
 ];
 
-const temporaryPlaybackSpeedStepExtent = 36.0;
-
 double nearestTemporaryPlaybackSpeed(double speed) {
   return temporaryPlaybackSpeeds.reduce(
     (nearest, candidate) => (candidate - speed).abs() < (nearest - speed).abs()
@@ -24,12 +22,12 @@ double initialTemporaryPlaybackSpeed() => 2.0;
 double temporaryPlaybackSpeedForDrag({
   required double initialSpeed,
   required double verticalDelta,
-  double stepExtent = temporaryPlaybackSpeedStepExtent,
 }) {
-  assert(stepExtent > 0);
+  const temporaryPlaybackSpeedStepExtent = 36.0;
+  assert(temporaryPlaybackSpeedStepExtent > 0);
   final snappedInitialSpeed = nearestTemporaryPlaybackSpeed(initialSpeed);
   final initialIndex = temporaryPlaybackSpeeds.indexOf(snappedInitialSpeed);
-  final movedSteps = (verticalDelta / stepExtent).round();
+  final movedSteps = (verticalDelta / temporaryPlaybackSpeedStepExtent).round();
   final targetIndex = (initialIndex + movedSteps).clamp(
     0,
     temporaryPlaybackSpeeds.length - 1,

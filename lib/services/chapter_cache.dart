@@ -21,7 +21,6 @@ class ChapterCache {
 
   static const String cacheFolderName = 'chapter_disk_cache';
 
-  @visibleForTesting
   Directory? customCacheDir;
 
   Future<Directory> _getCacheDirectory() async {

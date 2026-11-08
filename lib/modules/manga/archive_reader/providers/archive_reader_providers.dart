@@ -146,7 +146,6 @@ bool _isImageFile(String path) {
 
 /// Compares archive paths in the order a person expects numbered pages to
 /// appear. This keeps unpadded names such as `2.webp` before `10.webp`.
-@visibleForTesting
 int compareArchiveReaderPaths(String left, String right) {
   final leftLower = left.toLowerCase();
   final rightLower = right.toLowerCase();

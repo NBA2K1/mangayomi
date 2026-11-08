@@ -32,19 +32,9 @@ class ReadMoreWidgetState extends State<ReadMoreWidget>
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: ExpandableText(
               widget.text.trim(),
-              expandText: '',
               maxLines: 3,
               expanded: expanded,
-              linkColor: Colors.transparent,
-              animation: true,
               animationDuration: const Duration(milliseconds: 500),
-              expandOnTextTap: true,
-              collapseOnTextTap: true,
-              prefixText: '',
-              showGradientOverlay: false,
-              showExpandCollapseIcon: true,
-              expandIcon: Icons.keyboard_arrow_down_sharp,
-              collapseIcon: Icons.keyboard_arrow_up_sharp,
               onExpandedChanged: (value) {
                 setState(() => expanded = value);
                 widget.onChanged(value);

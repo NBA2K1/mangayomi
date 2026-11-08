@@ -93,11 +93,6 @@ class NovelPaginationResult {
     if (pageCount <= 1) return 0.0;
     return (pageIndex / (pageCount - 1)).clamp(0.0, 1.0);
   }
-
-  int pageForBlock(int blockIndex) {
-    final page = blockToPageMap[blockIndex] ?? 0;
-    return page.clamp(0, math.max(0, pageCount - 1));
-  }
 }
 
 /// Paginates HTML novel content into discrete pages sized to fit viewport dimensions.
@@ -152,8 +147,10 @@ class NovelPaginator {
 
       void flushParagraph() {
         if (currentParagraphNodes.isEmpty) return;
-        final combinedText =
-            currentParagraphNodes.map((n) => n.text ?? '').join().trim();
+        final combinedText = currentParagraphNodes
+            .map((n) => n.text ?? '')
+            .join()
+            .trim();
         if (combinedText.isNotEmpty) {
           final p = dom.Element.tag('p');
           if (element.attributes.containsKey('data-tts-index')) {

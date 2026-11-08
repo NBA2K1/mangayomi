@@ -55,20 +55,6 @@ class _CustomSubtitleViewState extends ConsumerState<CustomSubtitleView> {
     super.dispose();
   }
 
-  void setPadding(
-    EdgeInsets padding, {
-    Duration duration = const Duration(milliseconds: 100),
-  }) {
-    if (this.duration != duration) {
-      setState(() {
-        this.duration = duration;
-      });
-    }
-    setState(() {
-      this.padding = padding;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     subtitle = widget.controller.player.state.subtitle;

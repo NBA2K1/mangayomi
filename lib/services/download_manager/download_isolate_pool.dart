@@ -33,12 +33,6 @@ class DownloadIsolatePool {
   final Map<String, _PoolWorker> _runningTasks = {};
   void Function(SendPort)? _testWorkerEntryPoint;
 
-  @visibleForTesting
-  DownloadIsolatePool.forTesting({
-    this.poolSize = 1,
-    required void Function(SendPort) workerEntryPoint,
-  }) : _testWorkerEntryPoint = workerEntryPoint;
-
   DownloadIsolatePool._({this.poolSize = 3});
 
   /// Get the singleton instance of the pool

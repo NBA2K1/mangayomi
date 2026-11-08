@@ -40,7 +40,6 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 class MangaDetailView extends ConsumerStatefulWidget {
   final Function(bool) isExtended;
   final Widget? titleDescription;
-  final List<Color>? backButtonColors;
   final Widget? action;
   final Manga? manga;
   final bool sourceExist;
@@ -51,7 +50,6 @@ class MangaDetailView extends ConsumerStatefulWidget {
     super.key,
     required this.isExtended,
     this.titleDescription,
-    this.backButtonColors,
     this.action,
     required this.sourceExist,
     required this.manga,

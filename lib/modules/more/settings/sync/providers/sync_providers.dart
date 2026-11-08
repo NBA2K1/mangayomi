@@ -39,11 +39,6 @@ class Synching extends _$Synching {
     ref.invalidateSelf();
   }
 
-  void setServer(String? server) {
-    syncPreferenceRepository.save(state..server = server);
-    ref.invalidateSelf();
-  }
-
   void setSyncOn(bool value) {
     syncPreferenceRepository.save(state..syncOn = value);
     ref.invalidateSelf();
@@ -53,8 +48,6 @@ class Synching extends _$Synching {
     syncPreferenceRepository.save(state..autoSyncFrequency = value);
     ref.invalidateSelf();
   }
-
-  List<ChangedPart> getAllChangedParts() => changedPartRepository.getAll();
 
   List<ChangedPart> getChangedParts(List<ActionType> actionTypes) =>
       changedPartRepository.getByActions(actionTypes);

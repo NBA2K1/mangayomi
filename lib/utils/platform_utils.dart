@@ -77,11 +77,9 @@ bool get isTv => _isTvOverride ?? _isTvDetected;
 ///
 /// Pass null to go back to detection. Intended for tests and for exercising the
 /// TV layout on a desktop debug build; production code should read [isTv].
-@visibleForTesting
 set debugIsTvOverride(bool? value) => _isTvOverride = value;
 
 /// The current override, or null when [isTv] is following detection.
-@visibleForTesting
 bool? get debugIsTvOverride => _isTvOverride;
 
 /// Asks the native side whether this is a TV / leanback device and caches the

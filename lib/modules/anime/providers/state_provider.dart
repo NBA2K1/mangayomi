@@ -77,28 +77,6 @@ class SubtitleSettingsState extends _$SubtitleSettingsState {
     }
   }
 
-  void resetColor() {
-    state = PlayerSubtitleSettings(
-      fontSize: (state.fontSize ?? 45).clamp(5, 150),
-      useBold: state.useBold ?? true,
-      useItalic: state.useItalic ?? false,
-      textColorA: 255,
-      textColorR: 255,
-      textColorG: 255,
-      textColorB: 255,
-      borderColorA: 255,
-      borderColorR: 0,
-      borderColorG: 0,
-      borderColorB: 0,
-      backgroundColorA: 0,
-      backgroundColorR: 0,
-      backgroundColorG: 0,
-      backgroundColorB: 0,
-      overrideAssSubtitles: state.overrideAssSubtitles ?? false,
-    );
-    settingsRepository.update((s) => s.playerSubtitleSettings = state);
-  }
-
   void reset() {
     state = PlayerSubtitleSettings(
       fontSize: 45,

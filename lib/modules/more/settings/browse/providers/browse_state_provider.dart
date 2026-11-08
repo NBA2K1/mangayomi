@@ -143,15 +143,6 @@ class ExtensionsRepoState extends _$ExtensionsRepoState {
     return _deduplicate(list);
   }
 
-  bool containsRepo(String url) {
-    final clean = url.trim().toLowerCase();
-    return state.any((r) {
-      final rUrl = r.jsonUrl?.trim().toLowerCase();
-      if (rUrl == null) return false;
-      return rUrl == clean || rUrl == '$clean/' || '$rUrl/' == clean;
-    });
-  }
-
   void setVisibility(Repo repo, bool hidden) {
     final value = state.map((e) {
       if (e == repo) {

@@ -26,7 +26,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 import 'package:mangayomi/utils/platform_utils.dart';
 
-@visibleForTesting
 String? linuxDocumentsFallbackPath(Map<String, String> environment) {
   final home = environment['HOME']?.trim();
   return home == null || home.isEmpty ? null : home;

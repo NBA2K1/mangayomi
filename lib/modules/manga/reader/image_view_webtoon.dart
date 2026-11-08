@@ -29,7 +29,6 @@ class WebtoonScaleGestureRecognizer extends ScaleGestureRecognizer {
 
   bool Function()? canPanCallback;
 
-  @visibleForTesting
   GestureDisposition resolveDisposition(GestureDisposition disposition) {
     if (disposition == GestureDisposition.accepted) {
       final canPan = canPanCallback?.call() ?? false;

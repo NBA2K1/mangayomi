@@ -168,10 +168,8 @@ String _relationLabel(AppLocalizations l10n, String relation) =>
 /// Kitsu and AniList both hand these over shouting: TV, OVA, ONE_SHOT,
 /// LIGHT_NOVEL. Title case reads better on a card, except where the word is an
 /// acronym and title case turns TV into "Tv".
-@visibleForTesting
 const formatAcronyms = {'TV', 'OVA', 'ONA', 'OAV', 'CM', 'PV'};
 
-@visibleForTesting
 String prettyFormat(String format) {
   final words = format.split('_').where((w) => w.isNotEmpty).map((word) {
     if (formatAcronyms.contains(word.toUpperCase())) return word.toUpperCase();
