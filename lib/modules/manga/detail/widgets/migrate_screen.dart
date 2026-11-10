@@ -14,11 +14,13 @@ import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.d
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/modules/widgets/error_state.dart';
+import 'package:mangayomi/modules/widgets/progress_center.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/services/get_detail.dart';
 import 'package:mangayomi/services/search.dart';
 import 'package:mangayomi/utils/date.dart';
+import 'package:mangayomi/utils/error_toast.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/language.dart';
 import 'package:mangayomi/modules/widgets/global_search_result_card.dart';
@@ -316,16 +318,34 @@ class _MigrationMangaGlobalImageCardState
     );
   }
 
+  /// Fetches the chapters to preview behind a spinner. The extension can take
+  /// seconds on a title with many chapters, and without it the screen looks as
+  /// if the tap did nothing. Returns null if the request failed.
+  Future<MManga?> _loadPreview(BuildContext context) async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(canPop: false, child: ProgressCenter()),
+    );
+    try {
+      return await ref.read(
+        getDetailProvider(
+          url: widget.manga.link!,
+          source: widget.source,
+        ).future,
+      );
+    } catch (e, s) {
+      toastError(e, stack: s, source: 'migrate preview');
+      return null;
+    } finally {
+      navigator.pop();
+    }
+  }
+
   void _showMigrateDialog(BuildContext context, dynamic l10n) {
-    ref
-        .watch(
-          getDetailProvider(
-            url: widget.manga.link!,
-            source: widget.source,
-          ).future,
-        )
-        .then((preview) {
-          if (context.mounted) {
+    _loadPreview(context).then((preview) {
+          if (preview != null && context.mounted) {
             showDialog(
               context: context,
               builder: (ctx) {
