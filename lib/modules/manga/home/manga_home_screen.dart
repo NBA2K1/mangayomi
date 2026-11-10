@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -935,13 +937,28 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
                   // only the cause is demoted here to match ErrorState.
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      error.toString(),
-                      textAlign: TextAlign.center,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.textColor.withValues(alpha: 0.7),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onLongPress: () async {
+                        await Clipboard.setData(
+                          ClipboardData(text: error.toString()),
+                        );
+
+                        if (context.mounted) {
+                          botToast(
+                            context.l10n.error_reports_copied,
+                            second: 2,
+                          );
+                        }
+                      },
+                      child: Text(
+                        error.toString(),
+                        textAlign: TextAlign.center,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: context.textColor.withValues(alpha: 0.7),
+                        ),
                       ),
                     ),
                   ),
