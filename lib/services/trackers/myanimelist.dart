@@ -28,6 +28,8 @@ class MyAnimeList extends _$MyAnimeList
   final http = MClient.init(reqcopyWith: {'useDartHttpClient': true});
   static const _baseOAuthUrl = 'https://myanimelist.net/v1/oauth2';
   static const _baseApiUrl = 'https://api.myanimelist.net/v2';
+  static const _minSearchQueryLength = 3;
+  static const _maxSearchQueryLength = 64;
   String codeVerifier = "";
   static final _isDesktop = (Platform.isWindows || Platform.isLinux);
   static const _desktopClientId = '39e9be346b4e7dbcc59a98357e2f8472';
@@ -116,9 +118,16 @@ class MyAnimeList extends _$MyAnimeList
 
   @override
   Future<List<TrackSearch>> search(String query, isManga) async {
+    // MAL only returns results for queries between 3 and 64 characters.
+    // Cut longer titles (rune-safe, so no surrogate pair gets split).
+    final trimmed = query.trim();
+    final safeQuery = trimmed.runes.length > _maxSearchQueryLength
+        ? String.fromCharCodes(trimmed.runes.take(_maxSearchQueryLength)).trim()
+        : trimmed;
+    if (safeQuery.runes.length < _minSearchQueryLength) return [];
     final accessToken = await getAccessToken();
     final url = Uri.parse('$_baseApiUrl/${isManga ? "manga" : "anime"}')
-        .replace(queryParameters: {'q': query.trim(), 'nsfw': 'true'});
+        .replace(queryParameters: {'q': safeQuery, 'nsfw': 'true'});
     final result = await _makeGetRequest(url, accessToken);
     final res = jsonDecode(result.body) as Map<String, dynamic>;
 
